@@ -1,0 +1,72 @@
+{
+  "https://cematys.fr/article-ransomware-premieres-minutes.html": {
+    "tag": "Sécurité",
+    "title": "Ransomware : les 5 premières minutes qui changent tout",
+    "description": "Que faire, qui appeler, et surtout ce qu'il ne faut jamais faire dans l'heure qui suit une attaque.",
+    "link": "https://cematys.fr/article-ransomware-premieres-minutes.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-cout-heure-arret-serveur.html": {
+    "tag": "Coûts",
+    "title": "Combien coûte vraiment une heure d'arrêt serveur ?",
+    "description": "Un calcul concret, avec un exemple chiffré, pour mesurer ce qu'une panne coûte réellement à votre activité.",
+    "link": "https://cematys.fr/article-cout-heure-arret-serveur.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-erreurs-sauvegarde-pme.html": {
+    "tag": "Sauvegarde",
+    "title": "Les 3 erreurs de sauvegarde que font 90 % des PME",
+    "description": "Pourquoi une sauvegarde qui tourne chaque nuit ne suffit pas à vous protéger le jour où vous en avez vraiment besoin.",
+    "link": "https://cematys.fr/article-erreurs-sauvegarde-pme.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-infogerance-vs-technicien-interne.html": {
+    "tag": "Infogérance",
+    "title": "Infogérance ou technicien en interne ?",
+    "description": "Le vrai comparatif coût/bénéfice pour une PME de moins de 20 salariés.",
+    "link": "https://cematys.fr/article-infogerance-vs-technicien-interne.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-etude-cas-cabinet-medical.html": {
+    "tag": "Étude de cas",
+    "title": "D'un cabinet médical à plus de 30 postes connectés",
+    "description": "Comment nous avons fait sauter la limite native de Windows pour un cabinet d'implantologie, sans changer de logiciel métier.",
+    "link": "https://cematys.fr/article-etude-cas-cabinet-medical.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-signes-bombe-retardement.html": {
+    "tag": "Prévention",
+    "title": "5 signes que votre informatique est une bombe à retardement",
+    "description": "Une checklist rapide pour repérer les signaux d'alerte avant la panne.",
+    "link": "https://cematys.fr/article-signes-bombe-retardement.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-firewall-vs-box-operateur.html": {
+    "tag": "Sécurité",
+    "title": "Pourquoi la box de votre opérateur ne remplace pas un vrai firewall",
+    "description": "Ce que change réellement un pare-feu professionnel face aux menaces actuelles.",
+    "link": "https://cematys.fr/article-firewall-vs-box-operateur.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-antivirus-gratuit-vs-professionnel.html": {
+    "tag": "Sécurité",
+    "title": "Antivirus gratuit vs antivirus professionnel",
+    "description": "Ce que le \"gratuit\" vous coûte vraiment le jour où ça compte.",
+    "link": "https://cematys.fr/article-antivirus-gratuit-vs-professionnel.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-checklist-crash-disque.html": {
+    "tag": "Prévention",
+    "title": "La checklist en 10 points",
+    "description": "Votre entreprise survivrait-elle à un crash disque demain matin ?",
+    "link": "https://cematys.fr/article-checklist-crash-disque.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  },
+  "https://cematys.fr/article-maintenance-preventive-vs-urgence.html": {
+    "tag": "Maintenance",
+    "title": "Maintenance préventive vs réparation en urgence",
+    "description": "Pourquoi attendre la panne coûte toujours plus cher que de l'anticiper.",
+    "link": "https://cematys.fr/article-maintenance-preventive-vs-urgence.html",
+    "firstSeen": "2026-07-28T22:32:56.015Z"
+  }
+}

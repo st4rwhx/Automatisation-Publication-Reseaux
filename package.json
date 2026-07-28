@@ -1,0 +1,11 @@
+{
+  "name": "automatisation-publication-reseaux",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "generate-rss": "node scripts/generate-rss.mjs"
+  }
+}

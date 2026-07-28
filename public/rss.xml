@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>CEMATYS — Articles &amp; conseils</title>
+  <link>https://cematys.fr/articles.html</link>
+  <description>Conseils et retours d'expérience CEMATYS pour protéger votre entreprise.</description>
+  <language>fr-fr</language>
+  <lastBuildDate>Tue, 28 Jul 2026 22:32:56 GMT</lastBuildDate>
+  <item>
+    <title>Ransomware : les 5 premières minutes qui changent tout</title>
+    <link>https://cematys.fr/article-ransomware-premieres-minutes.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-ransomware-premieres-minutes.html</guid>
+    <category>Sécurité</category>
+    <description>Que faire, qui appeler, et surtout ce qu&apos;il ne faut jamais faire dans l&apos;heure qui suit une attaque.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>Combien coûte vraiment une heure d&apos;arrêt serveur ?</title>
+    <link>https://cematys.fr/article-cout-heure-arret-serveur.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-cout-heure-arret-serveur.html</guid>
+    <category>Coûts</category>
+    <description>Un calcul concret, avec un exemple chiffré, pour mesurer ce qu&apos;une panne coûte réellement à votre activité.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>Les 3 erreurs de sauvegarde que font 90 % des PME</title>
+    <link>https://cematys.fr/article-erreurs-sauvegarde-pme.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-erreurs-sauvegarde-pme.html</guid>
+    <category>Sauvegarde</category>
+    <description>Pourquoi une sauvegarde qui tourne chaque nuit ne suffit pas à vous protéger le jour où vous en avez vraiment besoin.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>Infogérance ou technicien en interne ?</title>
+    <link>https://cematys.fr/article-infogerance-vs-technicien-interne.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-infogerance-vs-technicien-interne.html</guid>
+    <category>Infogérance</category>
+    <description>Le vrai comparatif coût/bénéfice pour une PME de moins de 20 salariés.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>D&apos;un cabinet médical à plus de 30 postes connectés</title>
+    <link>https://cematys.fr/article-etude-cas-cabinet-medical.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-etude-cas-cabinet-medical.html</guid>
+    <category>Étude de cas</category>
+    <description>Comment nous avons fait sauter la limite native de Windows pour un cabinet d&apos;implantologie, sans changer de logiciel métier.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>5 signes que votre informatique est une bombe à retardement</title>
+    <link>https://cematys.fr/article-signes-bombe-retardement.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-signes-bombe-retardement.html</guid>
+    <category>Prévention</category>
+    <description>Une checklist rapide pour repérer les signaux d&apos;alerte avant la panne.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>Pourquoi la box de votre opérateur ne remplace pas un vrai firewall</title>
+    <link>https://cematys.fr/article-firewall-vs-box-operateur.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-firewall-vs-box-operateur.html</guid>
+    <category>Sécurité</category>
+    <description>Ce que change réellement un pare-feu professionnel face aux menaces actuelles.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>Antivirus gratuit vs antivirus professionnel</title>
+    <link>https://cematys.fr/article-antivirus-gratuit-vs-professionnel.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-antivirus-gratuit-vs-professionnel.html</guid>
+    <category>Sécurité</category>
+    <description>Ce que le &quot;gratuit&quot; vous coûte vraiment le jour où ça compte.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>La checklist en 10 points</title>
+    <link>https://cematys.fr/article-checklist-crash-disque.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-checklist-crash-disque.html</guid>
+    <category>Prévention</category>
+    <description>Votre entreprise survivrait-elle à un crash disque demain matin ?</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+  <item>
+    <title>Maintenance préventive vs réparation en urgence</title>
+    <link>https://cematys.fr/article-maintenance-preventive-vs-urgence.html</link>
+    <guid isPermaLink="true">https://cematys.fr/article-maintenance-preventive-vs-urgence.html</guid>
+    <category>Maintenance</category>
+    <description>Pourquoi attendre la panne coûte toujours plus cher que de l&apos;anticiper.</description>
+    <pubDate>Tue, 28 Jul 2026 22:32:56 GMT</pubDate>
+  </item>
+</channel>
+</rss>
