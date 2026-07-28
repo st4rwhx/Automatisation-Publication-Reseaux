@@ -6,6 +6,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "generate-rss": "node scripts/generate-rss.mjs"
+    "generate-rss": "node scripts/generate-rss.mjs",
+    "publish": "node scripts/publish-to-postiz.mjs",
+    "publish:dry": "node scripts/publish-to-postiz.mjs --dry-run"
   }
 }

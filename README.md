@@ -1,39 +1,56 @@
 # Automatisation Publication Réseaux
 
-Objectif : quand un nouvel article est publié sur https://cematys.fr/articles.html,
-il est automatiquement relayé sur les réseaux sociaux (LinkedIn, Instagram, TikTok,
-YouTube, Facebook, X...) via [Postiz](https://github.com/gitroomhq/postiz-app)
-(auto-hébergé, open source).
+Quand un nouvel article paraît sur https://cematys.fr/articles.html, il est relayé
+automatiquement sur les réseaux sociaux via [Postiz](https://github.com/gitroomhq/postiz-app)
+(open source, auto-hébergé, Apache 2.0 — API et webhooks sans limitation en self-hosted).
 
-## Étape 1 — Flux RSS des articles (fait)
+## Comment ça marche
 
-`scripts/generate-rss.mjs` télécharge `articles.html`, détecte les articles présents
-dans les cartes de la page, et génère `public/rss.xml`. La date de première détection
-de chaque article est mémorisée dans `data/seen-articles.json` : un article déjà connu
-n'est jamais republié, même si son texte est modifié plus tard.
-
-```bash
-npm run generate-rss
+```
+cematys.fr/articles.html
+        │  scripts/generate-rss.mjs   (détecte les nouveaux articles)
+        ▼
+data/seen-articles.json + public/rss.xml
+        │  scripts/publish-to-postiz.mjs   (appelle l'API Postiz)
+        ▼
+     Postiz  ──▶  LinkedIn · Facebook · Instagram · TikTok · YouTube · X …
 ```
 
-Le workflow `.github/workflows/generate-rss.yml` exécute ce script toutes les 2 heures
-et publie `public/` sur GitHub Pages.
+`articles.html` étant du HTML statique sans CMS ni flux, la détection des nouveaux
+articles se fait en lisant la page. La date de première détection de chaque article
+est mémorisée : un article connu n'est jamais republié, même si son texte change.
 
-### Mise en route (une seule fois)
+## Scripts
 
-1. Pousser ce dépôt sur GitHub (branche `main` ou celle utilisée par défaut).
-2. Dans **Settings → Pages** du dépôt, choisir **Source : GitHub Actions**.
-3. Lancer le workflow une première fois manuellement (**Actions → Générer et publier
-   le flux RSS des articles → Run workflow**) pour obtenir l'URL de Pages, généralement
-   `https://<utilisateur>.github.io/<depot>/rss.xml`.
+```bash
+npm run generate-rss    # détecte les articles, écrit public/rss.xml
+npm run publish:dry     # montre ce qui serait publié, sans rien envoyer
+npm run publish         # publie sur les réseaux connectés
+```
 
-## Étape 2 — Déployer Postiz (à faire)
+`publish` a besoin de `POSTIZ_API_URL` et `POSTIZ_API_KEY`.
 
-Postiz auto-hébergé (Docker) pour connecter les comptes sociaux et brancher le flux RSS
-ci-dessus dans sa fonctionnalité "RSS → post automatique".
+## État
 
-## Étape 3 — Comptes développeur par plateforme (à faire)
+| Étape | État |
+|---|---|
+| Détection des articles + flux RSS | Fait, testé (10 articles détectés) |
+| Script de publication via l'API Postiz | Fait, testé de bout en bout |
+| Stack Docker Postiz (`infra/`) | Fait, à déployer sur un serveur |
+| Serveur + sous-domaine HTTPS | **À faire — voir docs/DEPLOIEMENT.md** |
+| Apps développeur des réseaux | **À faire — voir docs/DEPLOIEMENT.md** |
 
-LinkedIn et YouTube sont simples à activer. Instagram/Facebook (Meta) et TikTok
-nécessitent la création d'une app développeur et une validation par la plateforme
-avant de pouvoir publier automatiquement.
+Les deux dernières lignes demandent ton intervention : elles engagent ton identité et
+ton entreprise (vérification Meta, audit TikTok, hébergement). Elles sont détaillées
+étape par étape dans **[docs/DEPLOIEMENT.md](docs/DEPLOIEMENT.md)**.
+
+## À savoir avant de commencer
+
+- **Postiz est lourd** : 7 conteneurs (dont Temporal et Elasticsearch), 4 Go de RAM
+  minimum. Ce n'est pas hébergeable sur un mutualisé.
+- **Le HTTPS est obligatoire** : les réseaux refusent les callbacks OAuth en HTTP.
+- **TikTok et Instagram demandent une validation humaine** de ton app développeur,
+  comptez 1 à 3 semaines. LinkedIn et YouTube sont bien plus rapides.
+- **TikTok et YouTube sont des plateformes vidéo** : sans production de vidéo, il n'y
+  a rien à y publier depuis un article texte. LinkedIn et Facebook sont les cibles
+  utiles tout de suite.

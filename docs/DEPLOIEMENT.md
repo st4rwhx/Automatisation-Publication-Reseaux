@@ -1,0 +1,129 @@
+# Déploiement
+
+Ce document liste les étapes qui demandent **ton intervention** : elles engagent ton
+identité, ton entreprise ou ta carte bancaire, et ne peuvent pas être automatisées.
+Tout le reste (code, configuration, scripts) est déjà dans le dépôt.
+
+---
+
+## 1. Un serveur pour Postiz
+
+Postiz n'est pas une petite application. Le stack officiel compte **7 conteneurs** :
+Postiz, PostgreSQL, Redis, puis Temporal (moteur de planification) avec son propre
+PostgreSQL et un Elasticsearch.
+
+Elasticsearch réserve à lui seul 256 Mo de heap Java, et Temporal ajoute deux services.
+
+| Ressource | Minimum réaliste |
+|---|---|
+| RAM | 4 Go (2 Go = échecs au démarrage) |
+| Disque | 20 Go |
+| CPU | 2 vCPU |
+
+Un VPS à ~10-15 €/mois (Hetzner CX22, OVH, Scaleway) convient. Il faut aussi un
+sous-domaine, par exemple `social.cematys.fr`, pointant vers ce serveur.
+
+### Installation
+
+```bash
+git clone <ce-depot> && cd Automatisation-Publication-Reseaux/infra
+cp .env.example .env
+
+# Générer les trois secrets et les coller dans .env
+openssl rand -hex 32   # JWT_SECRET
+openssl rand -hex 32   # POSTGRES_PASSWORD
+openssl rand -hex 32   # TEMPORAL_POSTGRES_PASSWORD
+
+docker compose up -d
+docker compose logs -f postiz   # le premier démarrage prend ~2 min (migrations)
+```
+
+Postiz écoute sur `127.0.0.1:4007`, volontairement fermé à l'extérieur. Il faut un
+reverse proxy HTTPS devant : **les APIs sociales refusent les callbacks OAuth en HTTP**.
+Exemple avec Caddy (`/etc/caddy/Caddyfile`), qui gère le certificat tout seul :
+
+```
+social.cematys.fr {
+    reverse_proxy 127.0.0.1:4007
+}
+```
+
+Puis crée ton compte sur `https://social.cematys.fr`, et repasse
+`DISABLE_REGISTRATION=true` dans `.env` suivi de `docker compose up -d` pour fermer
+les inscriptions.
+
+---
+
+## 2. Les apps développeur, réseau par réseau
+
+C'est **le vrai goulot d'étranglement**, et la raison pour laquelle "tout automatiser"
+prend des semaines et non des heures. Chaque réseau exige que tu crées une application
+développeur à ton nom, et la plupart la font relire par un humain avant d'autoriser la
+publication automatique.
+
+Pour chacun, l'URL de callback à déclarer est de la forme :
+`https://social.cematys.fr/api/integrations/social/<reseau>`
+
+| Réseau | Où | Difficulté | Ce qui bloque |
+|---|---|---|---|
+| **LinkedIn** | developer.linkedin.com | Faible | Produit "Share on LinkedIn" + "Sign In". Vérification de la Page entreprise. Quelques jours. |
+| **YouTube** | console.cloud.google.com | Faible/moyenne | Activer YouTube Data API v3. L'écran OAuth en mode "externe" demande une validation Google si tu dépasses les 100 utilisateurs test — pas ton cas, donc rapide. |
+| **Facebook + Instagram** | developers.facebook.com | Moyenne | Une seule app Meta couvre les deux. Instagram doit être un compte **Business ou Creator** rattaché à une Page Facebook. Permissions `instagram_content_publish`, `pages_manage_posts` → App Review avec vidéo de démonstration + vérification d'entreprise. Compte 1 à 3 semaines. |
+| **TikTok** | developers.tiktok.com | Élevée | Content Posting API. Tant que l'app n'est pas auditée, les vidéos publiées par API restent **en privé/brouillon** — c'est une limite imposée par TikTok, pas par Postiz. L'audit demande une démo et une URL de propriété de domaine vérifiée. |
+| **X / Twitter** | developer.x.com | Faible | L'écriture via API est payante (~100 $/mois sur le palier Basic). |
+
+Chaque identifiant obtenu se colle dans `infra/.env`, puis `docker compose up -d`.
+Un réseau dont les variables restent vides n'apparaît simplement pas dans Postiz —
+tu peux donc démarrer avec LinkedIn seul et ajouter les autres au fil des validations.
+
+### Une nuance importante sur TikTok et YouTube
+
+Ces deux plateformes sont **vidéo**. Tes articles sont du texte : il n'y a rien à y
+publier automatiquement sans produire une vidéo au préalable. Concrètement, LinkedIn
+et Facebook sont les cibles utiles immédiatement, Instagram demande au minimum une
+image (visuel généré à partir du titre), et TikTok/YouTube n'ont de sens que si tu
+décides de produire des vidéos courtes.
+
+---
+
+## 3. Brancher la publication automatique
+
+Deux chemins, déjà codés.
+
+### Chemin A — flux RSS (aucun code à lancer)
+
+`scripts/generate-rss.mjs` publie `public/rss.xml` via GitHub Pages. Dans Postiz,
+il suffit d'ajouter ce flux dans la fonction RSS : chaque nouvel article y crée un post.
+
+Prérequis côté GitHub, à faire dans l'interface :
+1. **Settings → Actions → General** : vérifier que les Actions sont autorisées.
+   *(Elles semblent actuellement désactivées sur ce dépôt : l'API ne voit aucun workflow.)*
+2. **Settings → Pages → Source : GitHub Actions**.
+3. **Actions → "Générer et publier le flux RSS des articles" → Run workflow**.
+
+L'URL du flux sera `https://st4rwhx.github.io/Automatisation-Publication-Reseaux/rss.xml`.
+
+### Chemin B — API Postiz (contrôle fin, recommandé)
+
+`scripts/publish-to-postiz.mjs` appelle directement l'API. Il ne dépend ni de GitHub
+Pages ni du polling RSS, et permet d'ajuster le texte par plateforme.
+
+```bash
+# Récupérer la clé dans Postiz → Settings → Public API
+export POSTIZ_API_URL=https://social.cematys.fr
+export POSTIZ_API_KEY=xxx
+
+npm run generate-rss                      # détecte les nouveaux articles
+node scripts/publish-to-postiz.mjs --dry-run   # vérifier sans rien envoyer
+node scripts/publish-to-postiz.mjs             # publier
+```
+
+**Garde-fou** : au tout premier lancement, les 10 articles déjà en ligne sont marqués
+comme relayés sans être envoyés. Sans ça, le branchement initial enverrait tout
+l'historique d'un coup sur tous les réseaux. Utiliser `--include-existing` pour forcer.
+
+Une fois validé, un cron sur le serveur suffit :
+
+```cron
+0 */2 * * * cd /chemin/du/depot && npm run generate-rss && node scripts/publish-to-postiz.mjs
+```
