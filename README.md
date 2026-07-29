@@ -2,55 +2,73 @@
 
 Quand un nouvel article paraît sur https://cematys.fr/articles.html, il est relayé
 automatiquement sur les réseaux sociaux via [Postiz](https://github.com/gitroomhq/postiz-app)
-(open source, auto-hébergé, Apache 2.0 — API et webhooks sans limitation en self-hosted).
+(open source, auto-hébergé, API et webhooks sans limitation en self-hosted).
 
 ## Comment ça marche
 
 ```
 cematys.fr/articles.html
-        │  scripts/generate-rss.mjs   (détecte les nouveaux articles)
+        │  generate-rss.mjs      détecte les nouveaux articles → public/rss.xml
+        │  generate-images.mjs   fabrique un visuel de marque par article
         ▼
-data/seen-articles.json + public/rss.xml
-        │  scripts/publish-to-postiz.mjs   (appelle l'API Postiz)
+GitHub Pages  (flux RSS + visuels accessibles publiquement)
+        │  publish-to-postiz.mjs   upload du visuel puis création du post
         ▼
-     Postiz  ──▶  LinkedIn · Facebook · Instagram · TikTok · YouTube · X …
+     Postiz  ──▶  LinkedIn · Instagram · TikTok · X
 ```
 
-`articles.html` étant du HTML statique sans CMS ni flux, la détection des nouveaux
-articles se fait en lisant la page. La date de première détection de chaque article
-est mémorisée : un article connu n'est jamais republié, même si son texte change.
+`articles.html` étant du HTML statique sans CMS ni flux, la détection se fait en
+lisant la page. La date de première détection de chaque article est mémorisée : un
+article connu n'est jamais republié, même si son texte change.
+
+## Réseaux couverts
+
+| Réseau | État | Remarque |
+|---|---|---|
+| LinkedIn | ✅ | Texte + visuel paysage |
+| X | ✅ | Texte + visuel paysage. Facturé à l'usage (~0,20 $/post avec lien) |
+| Instagram | ✅ | **Visuel obligatoire** (carré 1080×1350) |
+| TikTok | ✅ | **Visuel obligatoire** — post photo, aucune vidéo requise |
+| YouTube | ❌ | Aucune API pour les posts Communauté. Voir docs/DEPLOIEMENT.md |
 
 ## Scripts
 
 ```bash
-npm run generate-rss    # détecte les articles, écrit public/rss.xml
-npm run publish:dry     # montre ce qui serait publié, sans rien envoyer
-npm run publish         # publie sur les réseaux connectés
+npm run generate-rss      # détecte les articles, écrit public/rss.xml
+npm run generate-images   # génère les visuels manquants (--force pour tout refaire)
+npm run publish:dry       # montre ce qui serait publié, sans rien envoyer
+npm run publish           # publie sur les réseaux connectés
+npm run all               # enchaîne les trois
 ```
 
-`publish` a besoin de `POSTIZ_API_URL` et `POSTIZ_API_KEY`.
+`publish` a besoin de `POSTIZ_API_URL`, `POSTIZ_API_KEY` et `IMAGES_BASE_URL`.
+
+## Comportement de publication
+
+- **Un appel par réseau** : un refus de X n'empêche pas la publication sur LinkedIn,
+  et un nouveau passage ne réessaie que ce qui a échoué.
+- **Texte adapté à chaque réseau** : la limite de 280 caractères de X est respectée
+  en rognant le résumé, de façon à conserver les hashtags qui portent la visibilité.
+- **Garde-fou au premier lancement** : les articles déjà en ligne sont marqués comme
+  relayés sans être envoyés, pour ne pas déverser tout l'historique d'un coup.
 
 ## État
 
 | Étape | État |
 |---|---|
-| Détection des articles + flux RSS | Fait, testé (10 articles détectés) |
-| Script de publication via l'API Postiz | Fait, testé de bout en bout |
-| Stack Docker Postiz (`infra/`) | Fait, à déployer sur un serveur |
-| Serveur + sous-domaine HTTPS | **À faire — voir docs/DEPLOIEMENT.md** |
-| Apps développeur des réseaux | **À faire — voir docs/DEPLOIEMENT.md** |
+| Détection des articles + flux RSS | Fait, testé |
+| Génération des visuels de marque | Fait, testé |
+| Publication via l'API Postiz | Fait, testé de bout en bout |
+| Stack Docker Postiz (`infra/`) | Fait, validé |
+| Workflow GitHub Actions | Fait |
+| **Serveur + sous-domaine HTTPS** | **À faire — docs/DEPLOIEMENT.md** |
+| **Apps développeur des réseaux** | **À faire — docs/DEPLOIEMENT.md** |
 
-Les deux dernières lignes demandent ton intervention : elles engagent ton identité et
-ton entreprise (vérification Meta, audit TikTok, hébergement). Elles sont détaillées
-étape par étape dans **[docs/DEPLOIEMENT.md](docs/DEPLOIEMENT.md)**.
-
-## À savoir avant de commencer
+## À savoir
 
 - **Postiz est lourd** : 7 conteneurs (dont Temporal et Elasticsearch), 4 Go de RAM
-  minimum. Ce n'est pas hébergeable sur un mutualisé.
+  minimum. Pas hébergeable sur un mutualisé.
 - **Le HTTPS est obligatoire** : les réseaux refusent les callbacks OAuth en HTTP.
-- **TikTok et Instagram demandent une validation humaine** de ton app développeur,
-  comptez 1 à 3 semaines. LinkedIn et YouTube sont bien plus rapides.
-- **TikTok et YouTube sont des plateformes vidéo** : sans production de vidéo, il n'y
-  a rien à y publier depuis un article texte. LinkedIn et Facebook sont les cibles
-  utiles tout de suite.
+- **Instagram et TikTok demandent une validation humaine** de l'app développeur,
+  1 à 3 semaines. Pour TikTok, tant que l'audit n'est pas passé, les publications
+  restent en visibilité privée.

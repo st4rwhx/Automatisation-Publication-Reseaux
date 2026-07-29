@@ -34,6 +34,34 @@ const LIMIT = limitFlag !== -1 ? Number(args[limitFlag + 1]) : Infinity;
 
 const API_URL = (process.env.POSTIZ_API_URL || "").replace(/\/$/, "");
 const API_KEY = process.env.POSTIZ_API_KEY || "";
+// Base publique où sont hébergés les visuels (GitHub Pages). Postiz va les y chercher.
+const IMAGES_BASE_URL = (process.env.IMAGES_BASE_URL || "").replace(/\/$/, "");
+
+// Format de visuel attendu par chaque réseau.
+// Instagram et TikTok refusent un post sans média : pour eux le visuel est obligatoire.
+const IMAGE_FORMAT = {
+  instagram: "carre",
+  tiktok: "carre",
+  linkedin: "paysage",
+  x: "paysage",
+  facebook: "paysage",
+  threads: "paysage",
+  mastodon: "paysage",
+  bluesky: "paysage",
+};
+const MEDIA_REQUIRED = new Set(["instagram", "tiktok", "pinterest"]);
+
+// Hashtags par catégorie d'article, en complément des hashtags génériques.
+const HASHTAGS = {
+  "Sécurité": ["cybersecurite", "ransomware", "securiteinformatique"],
+  "Coûts": ["productivite", "gestion"],
+  "Sauvegarde": ["sauvegarde", "backup", "continuite"],
+  "Infogérance": ["infogerance", "supportIT"],
+  "Étude de cas": ["retourdexperience", "temoignage"],
+  "Prévention": ["prevention", "bonnespratiques"],
+  "Maintenance": ["maintenance", "infrastructure"],
+};
+const HASHTAGS_COMMUNS = ["informatique", "PME", "Lyon"];
 
 // Nombre de caractères accepté par réseau. Le texte est adapté pour tenir dedans.
 const LIMITS = {
@@ -53,10 +81,14 @@ const DEFAULT_LIMIT = 2000;
 // Réglages exigés en plus de __type par certaines plateformes.
 // Les réseaux absents de cette table reçoivent seulement { __type }.
 const PLATFORM_SETTINGS = {
-  youtube: { title: (a) => a.title.slice(0, 100), type: "public" },
+  // Pour un post photo, TikTok prend le titre dans settings.title (tronqué à 90 par
+  // Postiz) et le corps du post dans description. duet/stitch/video_made_with_ai ne
+  // s'appliquent qu'aux vidéos et sont ignorés ici.
   tiktok: {
+    title: (a) => a.title.slice(0, 90),
     privacy_level: "PUBLIC_TO_EVERYONE",
-    disclose: false,
+    comment: true,
+    autoAddMusic: "yes",
     brand_content_toggle: false,
     brand_organic_toggle: false,
   },
@@ -77,14 +109,26 @@ function hashtag(tag) {
 function buildContent(article, identifier) {
   const limit = LIMITS[identifier] ?? DEFAULT_LIMIT;
   const { title, description, link } = article;
-  const tags = `#${hashtag(article.tag)} #informatique #PME #Lyon`;
+  const tags = [...(HASHTAGS[article.tag] || [hashtag(article.tag)]), ...HASHTAGS_COMMUNS]
+    .map((t) => `#${t}`)
+    .join(" ");
 
-  const variantes = [
-    `${title}\n\n${description}\n\n${link}\n\n${tags}`,
-    `${title}\n\n${description}\n\n${link}`,
+  const variantes = [`${title}\n\n${description}\n\n${link}\n\n${tags}`];
+
+  // Sur les réseaux courts (X), le texte complet ne passe pas. Plutôt que de sacrifier
+  // les hashtags, qui portent la visibilité, on rogne le résumé pour les conserver.
+  const placeResume = limit - `${title}\n\n\n\n${link}\n\n${tags}`.length - 1;
+  if (placeResume > 40) {
+    variantes.push(
+      `${title}\n\n${description.slice(0, placeResume).trimEnd()}…\n\n${link}\n\n${tags}`
+    );
+  }
+  variantes.push(
     `${title}\n\n${link}\n\n${tags}`,
-    `${title}\n\n${link}`,
-  ];
+    `${title}\n\n${description}\n\n${link}`,
+    `${title}\n\n${link}`
+  );
+
   for (const v of variantes) {
     if (v.length <= limit) return v;
   }
@@ -120,6 +164,33 @@ async function api(pathname, options = {}) {
 async function loadJson(file, fallback) {
   if (!existsSync(file)) return fallback;
   return JSON.parse(await readFile(file, "utf-8"));
+}
+
+function slug(link) {
+  return path
+    .basename(new URL(link).pathname)
+    .replace(/\.html?$/, "")
+    .replace(/[^a-zA-Z0-9-]/g, "");
+}
+
+// Fait récupérer le visuel par Postiz depuis son URL publique et renvoie le média
+// à joindre au post. Le résultat est mémorisé : deux réseaux partageant le même
+// format ne provoquent qu'un seul upload.
+const mediaCache = new Map();
+async function uploadImage(article, format) {
+  const url = `${IMAGES_BASE_URL}/img/${slug(article.link)}-${format}.png`;
+  if (mediaCache.has(url)) return mediaCache.get(url);
+
+  const media = await api("/upload-from-url", {
+    method: "POST",
+    body: JSON.stringify({ url }),
+  });
+  if (!media?.id || !media?.path) {
+    throw new Error(`upload-from-url n'a pas renvoyé de média exploitable pour ${url}`);
+  }
+  const dto = { id: media.id, path: media.path, alt: article.title };
+  mediaCache.set(url, dto);
+  return dto;
 }
 
 async function main() {
@@ -188,27 +259,42 @@ async function main() {
     for (const integration of restant(article)) {
       const id = integration.identifier;
       const content = buildContent(article, id);
+      const format = IMAGE_FORMAT[id];
 
       if (DRY_RUN) {
-        console.log(`  [dry-run] ${id} (${content.length} car.)\n${content.replace(/^/gm, "    ")}`);
+        const visuel = format ? `${slug(article.link)}-${format}.png` : "aucun";
+        console.log(
+          `  [dry-run] ${id} (${content.length} car., visuel ${visuel})\n${content.replace(/^/gm, "    ")}`
+        );
         continue;
       }
 
-      const payload = {
-        type: "now",
-        date: new Date().toISOString(),
-        shortLink: false,
-        tags: [],
-        posts: [
-          {
-            integration: { id: integration.id },
-            value: [{ content, image: [] }],
-            settings: buildSettings(id, article),
-          },
-        ],
-      };
-
       try {
+        let image = [];
+        if (format && IMAGES_BASE_URL) {
+          image = [await uploadImage(article, format)];
+        } else if (MEDIA_REQUIRED.has(id)) {
+          // Publier sans média sur ces réseaux est refusé côté plateforme :
+          // mieux vaut un échec explicite qu'un appel voué à l'erreur.
+          throw new Error(
+            `${id} exige un visuel — définir IMAGES_BASE_URL et lancer generate-images.`
+          );
+        }
+
+        const payload = {
+          type: "now",
+          date: new Date().toISOString(),
+          shortLink: false,
+          tags: [],
+          posts: [
+            {
+              integration: { id: integration.id },
+              value: [{ content, image }],
+              settings: buildSettings(id, article),
+            },
+          ],
+        };
+
         await api("/posts", { method: "POST", body: JSON.stringify(payload) });
         entry.platforms[id] = { ok: true, at: new Date().toISOString() };
         console.log(`  ok  ${id} (${content.length} car.)`);

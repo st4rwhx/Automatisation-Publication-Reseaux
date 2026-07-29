@@ -15,52 +15,81 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 1. Détecte les nouveaux articles, régénère le flux et les visuels.
   build:
     runs-on: ubuntu-latest
-    # Remontés en env car le contexte `secrets` n'est pas lisible dans un `if:` de step.
-    env:
-      POSTIZ_API_URL: ${{ secrets.POSTIZ_API_URL }}
-      POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
 
       - name: Détecter les nouveaux articles et régénérer rss.xml
         run: node scripts/generate-rss.mjs
 
-      # Ne s'exécute que si les secrets POSTIZ_API_URL et POSTIZ_API_KEY sont
-      # configurés (Settings → Secrets and variables → Actions). Tant qu'ils sont
-      # absents, le workflow se contente de tenir le flux RSS à jour.
-      - name: Publier les nouveaux articles sur les réseaux
-        if: env.POSTIZ_API_KEY != ''
-        run: node scripts/publish-to-postiz.mjs
+      # Instagram et TikTok refusent un post sans média : sans ces visuels,
+      # la publication sur ces deux réseaux échoue.
+      - name: Générer les visuels manquants
+        run: node scripts/generate-images.mjs
 
-      - name: Committer l'état
-        if: always()
+      - name: Committer le flux et les visuels
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ public/rss.xml
-          git diff --staged --quiet || git commit -m "chore: état de publication et flux RSS"
+          git add data/seen-articles.json public/
+          git diff --staged --quiet || git commit -m "chore: flux RSS et visuels des articles"
           git push
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
+  # 2. Met les visuels en ligne. Indispensable avant de publier : Postiz vient
+  #    chercher les images à leur URL publique, elles doivent donc déjà y être.
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4
+
+  # 3. Publie sur les réseaux, une fois les visuels réellement accessibles.
+  #    Ne fait rien tant que les secrets Postiz ne sont pas configurés.
+  publish:
+    needs: deploy
+    runs-on: ubuntu-latest
+    env:
+      POSTIZ_API_URL: ${{ secrets.POSTIZ_API_URL }}
+      POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
+      IMAGES_BASE_URL: ${{ needs.deploy.outputs.page_url || vars.IMAGES_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Publier les nouveaux articles sur les réseaux
+        if: env.POSTIZ_API_KEY != ''
+        run: node scripts/publish-to-postiz.mjs
+
+      - name: Committer l'état de publication
+        if: always() && env.POSTIZ_API_KEY != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin ${{ github.ref_name }}
+          git add data/published.json
+          git diff --staged --quiet || git commit -m "chore: état de publication réseaux"
+          git push

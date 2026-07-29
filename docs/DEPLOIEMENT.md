@@ -67,22 +67,35 @@ Pour chacun, l'URL de callback à déclarer est de la forme :
 | Réseau | Où | Difficulté | Ce qui bloque |
 |---|---|---|---|
 | **LinkedIn** | developer.linkedin.com | Faible | Produit "Share on LinkedIn" + "Sign In". Vérification de la Page entreprise. Quelques jours. |
-| **YouTube** | console.cloud.google.com | Faible/moyenne | Activer YouTube Data API v3. L'écran OAuth en mode "externe" demande une validation Google si tu dépasses les 100 utilisateurs test — pas ton cas, donc rapide. |
+| **X** | developer.x.com | Faible | Depuis février 2026, facturation à l'usage : **0,20 $ par post contenant un lien**. À quelques articles par mois, moins d'1 $/mois. |
 | **Facebook + Instagram** | developers.facebook.com | Moyenne | Une seule app Meta couvre les deux. Instagram doit être un compte **Business ou Creator** rattaché à une Page Facebook. Permissions `instagram_content_publish`, `pages_manage_posts` → App Review avec vidéo de démonstration + vérification d'entreprise. Compte 1 à 3 semaines. |
-| **TikTok** | developers.tiktok.com | Élevée | Content Posting API. Tant que l'app n'est pas auditée, les vidéos publiées par API restent **en privé/brouillon** — c'est une limite imposée par TikTok, pas par Postiz. L'audit demande une démo et une URL de propriété de domaine vérifiée. |
-| **X / Twitter** | developer.x.com | Faible | L'écriture via API est payante (~100 $/mois sur le palier Basic). |
+| **TikTok** | developers.tiktok.com | Élevée | Content Posting API, en mode **post photo** (pas besoin de vidéo). Tant que l'app n'est pas auditée, les publications par API restent **en visibilité privée** — limite imposée par TikTok, pas par Postiz. L'audit demande une démo et une vérification de propriété du domaine. |
+
+### YouTube n'est pas dans cette liste, et c'est définitif
+
+La YouTube Data API **n'a aucun endpoint pour créer un post de la Communauté**. Elle
+couvre les vidéos, playlists, chaînes et commentaires, mais pas l'onglet Communauté :
+ces posts ne peuvent être créés que manuellement dans YouTube Studio. Les seules API
+tierces qui touchent aux posts Communauté se contentent de les **lire**.
+
+Ce n'est donc pas une limite de Postiz, et aucun outil ne la contourne. YouTube est
+hors périmètre tant qu'il n'y a pas de production vidéo.
 
 Chaque identifiant obtenu se colle dans `infra/.env`, puis `docker compose up -d`.
 Un réseau dont les variables restent vides n'apparaît simplement pas dans Postiz —
 tu peux donc démarrer avec LinkedIn seul et ajouter les autres au fil des validations.
 
-### Une nuance importante sur TikTok et YouTube
+### Le visuel n'est pas optionnel
 
-Ces deux plateformes sont **vidéo**. Tes articles sont du texte : il n'y a rien à y
-publier automatiquement sans produire une vidéo au préalable. Concrètement, LinkedIn
-et Facebook sont les cibles utiles immédiatement, Instagram demande au minimum une
-image (visuel généré à partir du titre), et TikTok/YouTube n'ont de sens que si tu
-décides de produire des vidéos courtes.
+Instagram et TikTok **refusent un post sans média**. Les articles du site n'ayant pas
+d'`og:image`, `scripts/generate-images.mjs` fabrique une carte de marque CEMATYS à
+partir du titre et de la catégorie, en deux formats : 1080×1350 pour Instagram et
+TikTok, 1200×628 pour LinkedIn et X.
+
+Ces visuels sont publiés sur GitHub Pages à côté du flux RSS, et Postiz vient les y
+chercher via son endpoint `upload-from-url`. C'est pour cette raison que le workflow
+publie sur les réseaux **après** le déploiement Pages : sinon Postiz chercherait une
+image qui n'est pas encore en ligne.
 
 ---
 
@@ -138,6 +151,10 @@ d'ajouter les deux secrets dans **Settings → Secrets and variables → Actions
 |---|---|
 | `POSTIZ_API_URL` | `https://social.cematys.fr` |
 | `POSTIZ_API_KEY` | la clé de Postiz → Settings → Public API |
+
+L'URL des visuels (`IMAGES_BASE_URL`) est déduite automatiquement de l'adresse
+GitHub Pages du dépôt ; il n'y a rien à renseigner sauf si tu héberges les images
+ailleurs, auquel cas définis la variable `IMAGES_BASE_URL`.
 
 Tant que ces secrets sont absents, le workflow se contente de tenir le flux RSS à jour
 sans rien publier — tu peux donc l'activer avant d'avoir monté le serveur.
