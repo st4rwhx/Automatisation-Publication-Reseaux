@@ -7,10 +7,11 @@
   },
   "scripts": {
     "generate-rss": "node scripts/generate-rss.mjs",
+    "daily-post": "node scripts/generate-daily-post.mjs",
     "generate-images": "node scripts/generate-images.mjs",
     "publish": "node scripts/publish-to-postiz.mjs",
     "publish:dry": "node scripts/publish-to-postiz.mjs --dry-run",
-    "all": "npm run generate-rss && npm run generate-images && npm run publish"
+    "all": "npm run generate-rss && npm run daily-post && npm run generate-images && npm run publish"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",

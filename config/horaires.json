@@ -1,0 +1,27 @@
+{
+  "_commentaire": "Créneaux de publication, en heure locale de Paris. Ce sont des repères usuels pour du B2B français, pas une vérité absolue : à ajuster avec les statistiques réelles de tes comptes au bout de quelques semaines. jours = 1 (lundi) à 7 (dimanche).",
+  "fuseau": "Europe/Paris",
+  "delaiMinimumMinutes": 20,
+  "reseaux": {
+    "linkedin": {
+      "jours": [2, 3, 4],
+      "heures": ["08:30"],
+      "note": "Audience professionnelle : mardi à jeudi en début de journée."
+    },
+    "instagram": {
+      "jours": [1, 2, 3, 4, 5],
+      "heures": ["12:30", "18:30"],
+      "note": "Pause déjeuner et fin de journée."
+    },
+    "tiktok": {
+      "jours": [1, 2, 3, 4, 5, 6, 7],
+      "heures": ["19:00"],
+      "note": "Consultation majoritairement en soirée."
+    },
+    "facebook": {
+      "jours": [2, 3, 4],
+      "heures": ["12:30"],
+      "note": "Milieu de journée en semaine."
+    }
+  }
+}

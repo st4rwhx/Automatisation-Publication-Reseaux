@@ -24,6 +24,7 @@ import { Resvg } from "@resvg/resvg-js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const SEEN_PATH = path.join(ROOT, "data", "seen-articles.json");
+const DAILY_PATH = path.join(ROOT, "data", "daily-posts.json");
 const OUT_DIR = path.join(ROOT, "public", "img");
 const FONT_DIR = path.join(ROOT, "assets", "fonts");
 
@@ -206,13 +207,29 @@ function card(article, fmt) {
   };
 }
 
+async function lireJson(fichier) {
+  if (!existsSync(fichier)) return {};
+  return JSON.parse(await readFile(fichier, "utf-8"));
+}
+
 async function main() {
-  if (!existsSync(SEEN_PATH)) {
-    throw new Error("data/seen-articles.json absent — lancer d'abord `npm run generate-rss`.");
-  }
-  const articles = Object.values(JSON.parse(await readFile(SEEN_PATH, "utf-8")));
-  if (articles.length === 0) {
-    console.log("Aucun article connu.");
+  // Deux sources de visuels : les articles du site, et les posts quotidiens
+  // générés pour les réseaux. Les deux utilisent la même carte de marque.
+  const articles = Object.values(await lireJson(SEEN_PATH)).map((a) => ({
+    base: slug(a.link),
+    tag: a.tag,
+    title: a.title,
+  }));
+
+  const quotidiens = Object.entries(await lireJson(DAILY_PATH)).map(([jour, p]) => ({
+    base: `quotidien-${jour}`,
+    tag: p.theme,
+    title: p.visuel,
+  }));
+
+  const sujets = [...articles, ...quotidiens];
+  if (sujets.length === 0) {
+    console.log("Rien à illustrer — lancer d'abord generate-rss ou generate-daily-post.");
     return;
   }
 
@@ -225,15 +242,15 @@ async function main() {
   let crees = 0;
   let ignores = 0;
 
-  for (const article of articles) {
-    const base = slug(article.link);
+  for (const sujet of sujets) {
+    const base = sujet.base;
     for (const [nom, fmt] of Object.entries(FORMATS)) {
       const dest = path.join(OUT_DIR, `${base}-${nom}.png`);
       if (existsSync(dest) && !FORCE) {
         ignores++;
         continue;
       }
-      const svg = await satori(card(article, fmt), {
+      const svg = await satori(card(sujet, fmt), {
         width: fmt.width,
         height: fmt.height,
         fonts,

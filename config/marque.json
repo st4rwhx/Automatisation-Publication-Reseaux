@@ -1,0 +1,31 @@
+{
+  "entreprise": "CEMATYS",
+  "site": "https://cematys.fr",
+  "activite": "Dépannage, infogérance et sécurité informatique pour les professionnels et associations",
+  "zone": "Lyon et l'Est lyonnais (Villeurbanne, Décines, Meyzieu, Vaulx-en-Velin, Chassieu, Genas, Oullins, Bron)",
+  "cible": "TPE, PME de moins de 50 salariés, cabinets médicaux, associations, commerces",
+  "depuis": 2010,
+  "telephone": "07 60 03 82 82",
+  "ton": [
+    "Concret et sans jargon : le lecteur est un dirigeant, pas un informaticien.",
+    "Sobre et professionnel, jamais putaclic ni alarmiste.",
+    "On explique le risque business (coût, temps d'arrêt, perte de données), pas la technique.",
+    "Ancrage local assumé : Lyon et l'Est lyonnais.",
+    "Pas de promesse chiffrée invérifiable, pas de fausse statistique."
+  ],
+  "themes": [
+    "Sécurité",
+    "Sauvegarde",
+    "Infogérance",
+    "Prévention",
+    "Maintenance",
+    "Coûts",
+    "Étude de cas"
+  ],
+  "interdits": [
+    "Inventer des chiffres, des études ou des références clients.",
+    "Citer un nom de client réel.",
+    "Promettre un résultat garanti.",
+    "Employer un ton anxiogène ou culpabilisant."
+  ]
+}
