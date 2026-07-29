@@ -60,7 +60,11 @@ async function loadState() {
 }
 
 function buildRss(items) {
-  const now = new Date().toUTCString();
+  // Daté du dernier article détecté, et non de l'heure courante : le fichier reste
+  // identique tant qu'aucun article n'a bougé, ce qui évite un commit à chaque passage.
+  const lastBuild = items.length
+    ? new Date(Math.max(...items.map((i) => new Date(i.firstSeen)))).toUTCString()
+    : new Date(0).toUTCString();
   const entries = items
     .map(
       (item) => `  <item>
@@ -81,7 +85,7 @@ function buildRss(items) {
   <link>${SOURCE_URL}</link>
   <description>Conseils et retours d'expérience CEMATYS pour protéger votre entreprise.</description>
   <language>fr-fr</language>
-  <lastBuildDate>${now}</lastBuildDate>
+  <lastBuildDate>${lastBuild}</lastBuildDate>
 ${entries}
 </channel>
 </rss>
