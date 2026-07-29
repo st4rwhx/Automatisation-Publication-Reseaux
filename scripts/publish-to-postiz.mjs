@@ -6,11 +6,15 @@
 // Options :
 //   --dry-run            n'appelle pas l'API, affiche ce qui serait publié
 //   --include-existing   publie aussi les articles déjà en ligne au moment du 1er lancement
-//   --limit N            ne publie que N articles au maximum sur ce passage
+//   --limit N            ne traite que N articles au maximum sur ce passage
 //
 // Garde-fou : au tout premier lancement, les articles déjà présents sur le site sont
 // marqués comme publiés sans être envoyés. Sans ça, brancher l'outil enverrait d'un coup
-// les 10 articles de l'historique sur tous les réseaux. --include-existing lève ce garde-fou.
+// tout l'historique sur tous les réseaux. --include-existing lève ce garde-fou.
+//
+// Chaque réseau reçoit son propre appel API : un refus de X (limite de caractères,
+// quota) n'empêche pas la publication sur LinkedIn. L'état est suivi réseau par réseau,
+// donc un nouveau passage ne réessaie que ce qui a échoué.
 
 import { readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -31,6 +35,21 @@ const LIMIT = limitFlag !== -1 ? Number(args[limitFlag + 1]) : Infinity;
 const API_URL = (process.env.POSTIZ_API_URL || "").replace(/\/$/, "");
 const API_KEY = process.env.POSTIZ_API_KEY || "";
 
+// Nombre de caractères accepté par réseau. Le texte est adapté pour tenir dedans.
+const LIMITS = {
+  x: 280,
+  bluesky: 300,
+  mastodon: 500,
+  threads: 500,
+  pinterest: 500,
+  instagram: 2200,
+  tiktok: 2200,
+  linkedin: 3000,
+  youtube: 5000,
+  facebook: 63206,
+};
+const DEFAULT_LIMIT = 2000;
+
 // Réglages exigés en plus de __type par certaines plateformes.
 // Les réseaux absents de cette table reçoivent seulement { __type }.
 const PLATFORM_SETTINGS = {
@@ -45,12 +64,33 @@ const PLATFORM_SETTINGS = {
   reddit: { subreddit: [] },
 };
 
-function buildContent(article) {
-  const hashtag = article.tag
+function hashtag(tag) {
+  return tag
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9]/g, "");
-  return `${article.title}\n\n${article.description}\n\n${article.link}\n\n#${hashtag} #informatique #PME #Lyon`;
+}
+
+// Construit le texte le plus complet qui tienne dans la limite du réseau.
+// Le titre et le lien sont prioritaires : on retire d'abord les hashtags,
+// puis le résumé, et en dernier recours on rogne le titre.
+function buildContent(article, identifier) {
+  const limit = LIMITS[identifier] ?? DEFAULT_LIMIT;
+  const { title, description, link } = article;
+  const tags = `#${hashtag(article.tag)} #informatique #PME #Lyon`;
+
+  const variantes = [
+    `${title}\n\n${description}\n\n${link}\n\n${tags}`,
+    `${title}\n\n${description}\n\n${link}`,
+    `${title}\n\n${link}\n\n${tags}`,
+    `${title}\n\n${link}`,
+  ];
+  for (const v of variantes) {
+    if (v.length <= limit) return v;
+  }
+
+  const place = limit - `\n\n${link}`.length - 1;
+  return `${title.slice(0, Math.max(0, place))}…\n\n${link}`;
 }
 
 function buildSettings(identifier, article) {
@@ -72,7 +112,7 @@ async function api(pathname, options = {}) {
   });
   const body = await res.text();
   if (!res.ok) {
-    throw new Error(`${options.method || "GET"} ${pathname} → HTTP ${res.status}: ${body}`);
+    throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
   }
   return body ? JSON.parse(body) : null;
 }
@@ -91,7 +131,7 @@ async function main() {
   const articles = Object.values(seen);
   if (articles.length === 0) {
     console.log("Aucun article connu — lancer d'abord `npm run generate-rss`.");
-    return;
+    return 0;
   }
 
   const firstRun = !existsSync(PUBLISHED_PATH);
@@ -99,7 +139,7 @@ async function main() {
 
   if (firstRun && !INCLUDE_EXISTING) {
     const backfill = Object.fromEntries(
-      articles.map((a) => [a.link, { title: a.title, publishedAt: null, backfilled: true }])
+      articles.map((a) => [a.link, { title: a.title, backfilled: true, platforms: {} }])
     );
     if (!DRY_RUN) {
       await writeFile(PUBLISHED_PATH, JSON.stringify(backfill, null, 2) + "\n", "utf-8");
@@ -109,17 +149,7 @@ async function main() {
         `(aucun envoi). Les prochains nouveaux articles seront publiés.\n` +
         `Pour les publier quand même : --include-existing`
     );
-    return;
-  }
-
-  const pending = articles
-    .filter((a) => !published[a.link])
-    .sort((a, b) => new Date(a.firstSeen) - new Date(b.firstSeen))
-    .slice(0, LIMIT);
-
-  if (pending.length === 0) {
-    console.log("Rien à publier : tous les articles connus ont déjà été relayés.");
-    return;
+    return 0;
   }
 
   const integrations = await api("/integrations");
@@ -130,39 +160,81 @@ async function main() {
     `${integrations.length} compte(s) connecté(s) : ${integrations.map((i) => i.identifier).join(", ")}`
   );
 
-  for (const article of pending) {
-    const content = buildContent(article);
-    const payload = {
-      type: "now",
-      date: new Date().toISOString(),
-      shortLink: false,
-      tags: [],
-      posts: integrations.map((integration) => ({
-        integration: { id: integration.id },
-        value: [{ content, image: [] }],
-        settings: buildSettings(integration.identifier, article),
-      })),
-    };
+  // Un article reste à traiter tant qu'il n'est pas relayé sur tous les réseaux connectés.
+  // Connecter un nouveau réseau plus tard ne rattrape pas l'historique déjà marqué.
+  const restant = (article) => {
+    const e = published[article.link];
+    if (!e) return integrations;
+    if (e.backfilled) return [];
+    return integrations.filter((i) => !e.platforms?.[i.identifier]?.ok);
+  };
 
-    if (DRY_RUN) {
-      console.log(`\n[dry-run] ${article.title}\n${content}\n`);
-      continue;
-    }
+  const pending = articles
+    .filter((a) => restant(a).length > 0)
+    .sort((a, b) => new Date(a.firstSeen) - new Date(b.firstSeen))
+    .slice(0, LIMIT);
 
-    await api("/posts", { method: "POST", body: JSON.stringify(payload) });
-    published[article.link] = {
-      title: article.title,
-      publishedAt: new Date().toISOString(),
-      platforms: integrations.map((i) => i.identifier),
-    };
-    await writeFile(PUBLISHED_PATH, JSON.stringify(published, null, 2) + "\n", "utf-8");
-    console.log(`Publié : ${article.title}`);
+  if (pending.length === 0) {
+    console.log("Rien à publier : tous les articles connus ont déjà été relayés.");
+    return 0;
   }
 
-  if (DRY_RUN) console.log(`\n${pending.length} article(s) seraient publiés.`);
+  let echecs = 0;
+  for (const article of pending) {
+    console.log(`\n${article.title}`);
+    const entry = published[article.link] || { title: article.title, platforms: {} };
+    entry.platforms = entry.platforms || {};
+
+    for (const integration of restant(article)) {
+      const id = integration.identifier;
+      const content = buildContent(article, id);
+
+      if (DRY_RUN) {
+        console.log(`  [dry-run] ${id} (${content.length} car.)\n${content.replace(/^/gm, "    ")}`);
+        continue;
+      }
+
+      const payload = {
+        type: "now",
+        date: new Date().toISOString(),
+        shortLink: false,
+        tags: [],
+        posts: [
+          {
+            integration: { id: integration.id },
+            value: [{ content, image: [] }],
+            settings: buildSettings(id, article),
+          },
+        ],
+      };
+
+      try {
+        await api("/posts", { method: "POST", body: JSON.stringify(payload) });
+        entry.platforms[id] = { ok: true, at: new Date().toISOString() };
+        console.log(`  ok  ${id} (${content.length} car.)`);
+      } catch (err) {
+        entry.platforms[id] = { ok: false, error: err.message, at: new Date().toISOString() };
+        echecs++;
+        console.error(`  ECHEC ${id} : ${err.message}`);
+      }
+    }
+
+    if (!DRY_RUN) {
+      published[article.link] = entry;
+      await writeFile(PUBLISHED_PATH, JSON.stringify(published, null, 2) + "\n", "utf-8");
+    }
+  }
+
+  if (echecs > 0) {
+    console.error(`\n${echecs} publication(s) en échec — relancer réessaiera uniquement celles-ci.`);
+    return 1;
+  }
+  return 0;
 }
 
-main().catch((err) => {
-  console.error(err.message);
-  process.exit(1);
-});
+main()
+  .then((code) => process.exit(code))
+  .catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });

@@ -122,7 +122,27 @@ node scripts/publish-to-postiz.mjs             # publier
 comme relayés sans être envoyés. Sans ça, le branchement initial enverrait tout
 l'historique d'un coup sur tous les réseaux. Utiliser `--include-existing` pour forcer.
 
-Une fois validé, un cron sur le serveur suffit :
+Le texte est adapté à chaque réseau : la limite de 280 caractères de X est respectée en
+retirant d'abord les hashtags, puis le résumé, le titre et le lien étant prioritaires.
+Chaque réseau reçoit son propre appel API, donc un refus de X n'empêche pas la
+publication sur LinkedIn, et un nouveau passage ne réessaie que ce qui a échoué.
+
+### Automatiser le déclenchement
+
+Deux possibilités, au choix.
+
+**Via GitHub Actions** — le workflow tourne déjà toutes les 2 heures. Il suffit
+d'ajouter les deux secrets dans **Settings → Secrets and variables → Actions** :
+
+| Secret | Valeur |
+|---|---|
+| `POSTIZ_API_URL` | `https://social.cematys.fr` |
+| `POSTIZ_API_KEY` | la clé de Postiz → Settings → Public API |
+
+Tant que ces secrets sont absents, le workflow se contente de tenir le flux RSS à jour
+sans rien publier — tu peux donc l'activer avant d'avoir monté le serveur.
+
+**Via un cron sur le serveur** — si tu préfères ne pas dépendre de GitHub :
 
 ```cron
 0 */2 * * * cd /chemin/du/depot && npm run generate-rss && node scripts/publish-to-postiz.mjs

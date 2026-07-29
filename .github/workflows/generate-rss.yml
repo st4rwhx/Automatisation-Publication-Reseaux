@@ -1,4 +1,4 @@
-name: Générer et publier le flux RSS des articles
+name: Détecter les articles, publier et mettre à jour le flux RSS
 
 on:
   schedule:
@@ -17,26 +17,36 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Remontés en env car le contexte `secrets` n'est pas lisible dans un `if:` de step.
+    env:
+      POSTIZ_API_URL: ${{ secrets.POSTIZ_API_URL }}
+      POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Générer rss.xml
+      - name: Détecter les nouveaux articles et régénérer rss.xml
         run: node scripts/generate-rss.mjs
 
-      - name: Committer les changements d'état
+      # Ne s'exécute que si les secrets POSTIZ_API_URL et POSTIZ_API_KEY sont
+      # configurés (Settings → Secrets and variables → Actions). Tant qu'ils sont
+      # absents, le workflow se contente de tenir le flux RSS à jour.
+      - name: Publier les nouveaux articles sur les réseaux
+        if: env.POSTIZ_API_KEY != ''
+        run: node scripts/publish-to-postiz.mjs
+
+      - name: Committer l'état
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/seen-articles.json public/rss.xml
-          git diff --staged --quiet || git commit -m "chore: mise à jour du flux RSS des articles"
+          git add data/ public/rss.xml
+          git diff --staged --quiet || git commit -m "chore: état de publication et flux RSS"
           git push
 
       - name: Upload Pages artifact
