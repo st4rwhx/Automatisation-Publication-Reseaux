@@ -1,57 +1,139 @@
-// Petite couche d'accès au modèle de langage, volontairement minimale pour rester
-// remplaçable : si le palier gratuit de Gemini change, seul ce fichier bouge.
+// Couche d'accès LLM avec fallback chain : Gemini → Groq → DeepSeek → Kimi.
+// Chaque provider a son propre format d'API ; on essaie chacun jusqu'au succès.
 //
 // Variables d'environnement :
-//   LLM_API_KEY    obligatoire — clé Google AI Studio (gratuite, sans carte bancaire)
-//   LLM_MODEL      défaut gemini-3.5-flash-lite
-//   LLM_ENDPOINT   défaut https://generativelanguage.googleapis.com/v1beta/interactions
+//   GEMINI_API_KEY     clé Google AI Studio (gratuite)
+//   GROQ_API_KEY       clé Groq (30 RPM gratuit)
+//   DEEPSEEK_API_KEY   clé DeepSeek
+//   KIMI_API_KEY       clé Moonshot Kimi
 //
-// Palier gratuit : largement suffisant ici (un article et quelques posts par jour
-// consomment une fraction du quota quotidien). À noter : sur le palier gratuit,
-// Google se réserve le droit d'exploiter les échanges pour améliorer ses produits.
+// Au moins une clé doit être définie. La chaîne essaie Gemini d'abord, puis
+// Groq, DeepSeek, Kimi en dernier recours. Si toutes échouent, l'erreur porte
+// sur le dernier provider.
 
-const ENDPOINT =
-  process.env.LLM_ENDPOINT ||
-  "https://generativelanguage.googleapis.com/v1beta/interactions";
-const MODEL = process.env.LLM_MODEL || "gemini-3.5-flash-lite";
+const PROVIDERS = {
+  gemini: {
+    available: () => Boolean(process.env.GEMINI_API_KEY),
+    call: async (prompt) => {
+      const key = process.env.GEMINI_API_KEY;
+      const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/interactions",
+        {
+          method: "POST",
+          headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "gemini-3.5-flash-lite",
+            input: prompt,
+          }),
+        }
+      );
+      const body = await res.text();
+      if (!res.ok) throw new Error(`Gemini: HTTP ${res.status}`);
+      const data = JSON.parse(body);
+      return (
+        data.output_text ??
+        data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ??
+        null
+      );
+    },
+  },
+
+  groq: {
+    available: () => Boolean(process.env.GROQ_API_KEY),
+    call: async (prompt) => {
+      const key = process.env.GROQ_API_KEY;
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "mixtral-8x7b-32768",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+        }),
+      });
+      const body = await res.text();
+      if (!res.ok) throw new Error(`Groq: HTTP ${res.status}`);
+      const data = JSON.parse(body);
+      return data.choices?.[0]?.message?.content ?? null;
+    },
+  },
+
+  deepseek: {
+    available: () => Boolean(process.env.DEEPSEEK_API_KEY),
+    call: async (prompt) => {
+      const key = process.env.DEEPSEEK_API_KEY;
+      const res = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+        }),
+      });
+      const body = await res.text();
+      if (!res.ok) throw new Error(`DeepSeek: HTTP ${res.status}`);
+      const data = JSON.parse(body);
+      return data.choices?.[0]?.message?.content ?? null;
+    },
+  },
+
+  kimi: {
+    available: () => Boolean(process.env.KIMI_API_KEY),
+    call: async (prompt) => {
+      const key = process.env.KIMI_API_KEY;
+      const res = await fetch("https://api.moonshot.cn/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "moonshot-v1-32k",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+        }),
+      });
+      const body = await res.text();
+      if (!res.ok) throw new Error(`Kimi: HTTP ${res.status}`);
+      const data = JSON.parse(body);
+      return data.choices?.[0]?.message?.content ?? null;
+    },
+  },
+};
 
 export function llmConfigured() {
-  return Boolean(process.env.LLM_API_KEY);
+  return Object.values(PROVIDERS).some((p) => p.available());
 }
 
 export async function generate(prompt) {
-  const key = process.env.LLM_API_KEY;
-  if (!key) throw new Error("LLM_API_KEY manquante.");
+  const order = ["gemini", "groq", "deepseek", "kimi"];
+  let lastError = null;
 
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: MODEL, input: prompt }),
-  });
+  for (const name of order) {
+    const provider = PROVIDERS[name];
+    if (!provider.available()) continue;
 
-  const body = await res.text();
-  if (!res.ok) {
-    throw new Error(`Modèle: HTTP ${res.status} — ${body.slice(0, 300)}`);
+    try {
+      const texte = await provider.call(prompt);
+      if (!texte) throw new Error("Pas de texte dans la réponse");
+      return texte.trim();
+    } catch (err) {
+      lastError = err;
+      console.warn(`  ${name} échoué: ${err.message}`);
+      continue;
+    }
   }
 
-  let data;
-  try {
-    data = JSON.parse(body);
-  } catch {
-    throw new Error(`Réponse du modèle illisible : ${body.slice(0, 200)}`);
-  }
-
-  // On accepte les deux formes d'API : la récente (output_text) et l'historique
-  // (candidates[].content.parts[].text), pour ne pas casser si le compte bascule.
-  const texte =
-    data.output_text ??
-    data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ??
-    null;
-
-  if (!texte) {
-    throw new Error(`Réponse du modèle sans texte exploitable : ${body.slice(0, 200)}`);
-  }
-  return texte.trim();
+  throw new Error(
+    `Aucun provider LLM disponible ou tous ont échoué. Dernier: ${lastError?.message || "inconnu"}`
+  );
 }
 
 // Demande du JSON au modèle et le parse. Les modèles encadrent souvent leur réponse
