@@ -93,7 +93,7 @@ function valider(p) {
 
 async function main() {
   if (!llmConfigured()) {
-    throw new Error("LLM_API_KEY manquante — voir docs/DEPLOIEMENT.md.");
+    throw new Error("Aucun provider LLM configuré — voir SETUP_SECRETS.md.");
   }
 
   const marque = JSON.parse(await readFile(MARQUE_PATH, "utf-8"));
