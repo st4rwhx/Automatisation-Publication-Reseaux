@@ -1,47 +1,96 @@
 # Automatisation Publication Réseaux
 
-Quand un nouvel article paraît sur https://cematys.fr/articles.html, il est relayé
-automatiquement sur les réseaux sociaux via [Postiz](https://github.com/gitroomhq/postiz-app)
-(open source, auto-hébergé, API et webhooks sans limitation en self-hosted).
+Deux flux de publication automatisés :
+
+1. **Détection articles** : quand un nouvel article paraît sur https://cematys.fr/articles.html,
+   il est relayé automatiquement via [Postiz](https://github.com/gitroomhq/postiz-app)
+   (open source, auto-hébergé).
+
+2. **Posts quotidiens** : chaque jour, un conseil autonome est généré par IA selon la marque
+   CEMATYS et publié aux heures optimales par réseau.
 
 ## Comment ça marche
 
 ```
-cematys.fr/articles.html
-        │  generate-rss.mjs      détecte les nouveaux articles → public/rss.xml
-        │  generate-images.mjs   fabrique un visuel de marque par article
-        ▼
-GitHub Pages  (flux RSS + visuels accessibles publiquement)
-        │  publish-to-postiz.mjs   upload du visuel puis création du post
-        ▼
-     Postiz  ──▶  LinkedIn · Instagram · TikTok · X
+┌─── cematys.fr/articles.html
+│         │  generate-rss.mjs       détecte les articles → public/rss.xml
+│         │  generate-images.mjs    fabrique un visuel de marque
+│         ▼
+├─── GitHub Pages  (flux + visuels publics)
+│         │  publish-to-postiz.mjs
+│         ▼
+├─── config/marque.json + LLM
+│         │  generate-daily-post.mjs  génère 1 post autonome/jour
+│         │  generate-images.mjs      visuel du post quotidien
+│         ▼
+└─── Postiz (scheduling)  ──▶  LinkedIn · Instagram · TikTok · Facebook
+         (publié aux heures optimales par réseau)
 ```
 
-`articles.html` étant du HTML statique sans CMS ni flux, la détection se fait en
-lisant la page. La date de première détection de chaque article est mémorisée : un
-article connu n'est jamais republié, même si son texte change.
+**Articles** : la date de première détection est mémorisée, on ne republié jamais deux fois.
+
+**Posts quotidiens** : idempotent (une seule génération par date, même si le workflow s'exécute plusieurs fois).
 
 ## Réseaux couverts
 
 | Réseau | État | Remarque |
 |---|---|---|
 | LinkedIn | ✅ | Texte + visuel paysage |
-| X | ✅ | Texte + visuel paysage. Facturé à l'usage (~0,20 $/post avec lien) |
 | Instagram | ✅ | **Visuel obligatoire** (carré 1080×1350) |
-| TikTok | ✅ | **Visuel obligatoire** — post photo, aucune vidéo requise |
-| YouTube | ❌ | Aucune API pour les posts Communauté. Voir docs/DEPLOIEMENT.md |
+| TikTok | ✅ | **Visuel obligatoire** — post photo, pas de vidéo requise |
+| Facebook | ✅ | Texte + visuel paysage |
+| X | ⚠️ | Exclus par défaut (payant depuis fév 2026 : ~0,20 $/post avec lien). Activable avec `RESEAUX_EXCLUS=""` |
+| YouTube | ❌ | Aucune API pour les posts Communauté |
 
 ## Scripts
 
 ```bash
-npm run generate-rss      # détecte les articles, écrit public/rss.xml
-npm run generate-images   # génère les visuels manquants (--force pour tout refaire)
-npm run publish:dry       # montre ce qui serait publié, sans rien envoyer
-npm run publish           # publie sur les réseaux connectés
-npm run all               # enchaîne les trois
+npm run generate-rss      # détecte les articles du site
+npm run daily-post        # génère le post du jour (si LLM configuré)
+npm run generate-images   # fabrique les visuels manquants (--force = tout refaire)
+npm run publish:dry       # affiche ce qui serait publié, sans rien envoyer
+npm run publish           # publie les nouveaux articles + posts sur les réseaux
+npm run all               # enchaîne tout : RSS → daily-post → images → publish
 ```
 
-`publish` a besoin de `POSTIZ_API_URL`, `POSTIZ_API_KEY` et `IMAGES_BASE_URL`.
+**Variables d'environnement requises :**
+- Au moins un provider LLM : `GEMINI_API_KEY` ou `GROQ_API_KEY` ou `DEEPSEEK_API_KEY` ou `KIMI_API_KEY`
+  → voir [`SETUP_SECRETS.md`](SETUP_SECRETS.md)
+- Pour la publication : `POSTIZ_API_URL`, `POSTIZ_API_KEY`, `IMAGES_BASE_URL`
+
+## Configuration
+
+### `config/marque.json` — Profil de la marque
+Définit :
+- **Ton** : 5+ règles de rédaction (ex: "concret pas jargon", "sérieux pas alarmiste")
+- **Thèmes** : 7 catégories pour les articles (Sécurité, Sauvegarde, etc.)
+- **Interdits** : 4 règles strictes (pas de chiffres inventés, pas de noms de clients, etc.)
+
+Utilisé par `generate-daily-post.mjs` pour générer des posts cohérents avec la marque.
+
+### `config/horaires.json` — Heures de publication optimales
+Définit par réseau :
+- Jours de la semaine (1-7)
+- Heures HH:MM
+- Fuseau (ex: Europe/Paris)
+
+Chaque publication est planifiée à l'heure optimale via l'API Postiz.
+
+Exemple :
+```json
+{
+  "linkedin": {
+    "jours": [2, 3, 4],
+    "heures": ["08:30"],
+    "note": "Pic professionnel mardi-jeudi 8h30"
+  },
+  "instagram": {
+    "jours": [1, 2, 3, 4, 5],
+    "heures": ["12:30", "18:30"],
+    "note": "Pic déjeuner et soirée"
+  }
+}
+```
 
 ## Comportement de publication
 
@@ -56,13 +105,17 @@ npm run all               # enchaîne les trois
 
 | Étape | État |
 |---|---|
-| Détection des articles + flux RSS | Fait, testé |
-| Génération des visuels de marque | Fait, testé |
-| Publication via l'API Postiz | Fait, testé de bout en bout |
-| Stack Docker Postiz (`infra/`) | Fait, validé |
-| Workflow GitHub Actions | Fait |
-| **Serveur + sous-domaine HTTPS** | **À faire — docs/DEPLOIEMENT.md** |
-| **Apps développeur des réseaux** | **À faire — docs/DEPLOIEMENT.md** |
+| Détection des articles + flux RSS | ✅ Fait |
+| Génération des visuels de marque | ✅ Fait |
+| Posts quotidiens générés par IA | ✅ Fait |
+| Chaîne fallback LLM (Gemini → Groq → DeepSeek → Kimi) | ✅ Fait |
+| Scheduling optimisé par réseau | ✅ Fait |
+| Publication via API Postiz | ✅ Fait |
+| Workflow GitHub Actions (2h) | ✅ Fait |
+| Stack Docker Postiz (`infra/`) | ✅ Fait |
+| **Setup API keys** | **➜ Voir SETUP_SECRETS.md** |
+| **Serveur Postiz + HTTPS** | **À faire** |
+| **Apps développeur des réseaux** | **À faire** |
 
 ## À savoir
 
