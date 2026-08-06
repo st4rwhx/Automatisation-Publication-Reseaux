@@ -13,10 +13,10 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { generateJson, llmConfigured } from "./lib/llm.mjs";
+import { chargerProfil } from "./lib/profil.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const MARQUE_PATH = path.join(ROOT, "config", "marque.json");
 const POSTS_PATH = path.join(ROOT, "data", "daily-posts.json");
 const SEEN_PATH = path.join(ROOT, "data", "seen-articles.json");
 
@@ -34,26 +34,27 @@ async function loadJson(file, fallback) {
   return JSON.parse(await readFile(file, "utf-8"));
 }
 
-function buildPrompt(marque, recents, titresArticles) {
-  return `Tu rédiges le post du jour pour les réseaux sociaux de ${marque.entreprise}.
+function buildPrompt(profil, recents, titresArticles) {
+  const entete = profil.type === "particulier" ? "PROFIL" : "ENTREPRISE";
+  return `Tu rédiges le post du jour pour les réseaux sociaux de ${profil.nom}.
 
-ENTREPRISE
-- Activité : ${marque.activite}
-- Zone : ${marque.zone}
-- Clients : ${marque.cible}
-- En activité depuis ${marque.depuis}
+${entete}
+- Activité : ${profil.activite}
+- Zone : ${profil.zone}
+- Cible : ${profil.cible}
+${profil.depuis ? `- En activité depuis ${profil.depuis}` : ""}
 
 TON À RESPECTER
-${marque.ton.map((t) => `- ${t}`).join("\n")}
+${profil.ton.map((t) => `- ${t}`).join("\n")}
 
 INTERDITS STRICTS
-${marque.interdits.map((t) => `- ${t}`).join("\n")}
+${profil.interdits.map((t) => `- ${t}`).join("\n")}
 
 SUJETS DÉJÀ TRAITÉS RÉCEMMENT — n'y reviens pas, trouve un angle neuf :
 ${recents.length ? recents.map((r) => `- ${r}`).join("\n") : "- (aucun pour l'instant)"}
 
 ARTICLES DÉJÀ EN LIGNE SUR LE SITE — ne les paraphrase pas :
-${titresArticles.map((t) => `- ${t}`).join("\n")}
+${titresArticles.length ? titresArticles.map((t) => `- ${t}`).join("\n") : "- (aucun)"}
 
 MISSION
 Écris un post utile et autonome : un conseil concret qu'un dirigeant peut appliquer,
@@ -62,7 +63,7 @@ vers un article. Il doit donner envie de lire dès la première ligne, sans êtr
 
 FORMAT DE RÉPONSE (JSON)
 {
-  "theme": "un des thèmes suivants : ${marque.themes.join(", ")}",
+  "theme": "un des thèmes suivants : ${profil.themes.join(", ")}",
   "sujet": "résumé du sujet en 8 mots maximum, sert à éviter les redites",
   "visuel": "titre court pour le visuel, 60 caractères maximum, percutant",
   "hook": "première ligne du post, 90 caractères maximum, doit accrocher",
@@ -96,7 +97,7 @@ async function main() {
     throw new Error("Aucun provider LLM configuré — voir SETUP_SECRETS.md.");
   }
 
-  const marque = JSON.parse(await readFile(MARQUE_PATH, "utf-8"));
+  const profil = await chargerProfil();
   const posts = await loadJson(POSTS_PATH, {});
 
   if (posts[JOUR] && !DRY_RUN) {
@@ -111,7 +112,7 @@ async function main() {
 
   const articles = Object.values(await loadJson(SEEN_PATH, {})).map((a) => a.title);
 
-  const post = valider(await generateJson(buildPrompt(marque, recents, articles)));
+  const post = valider(await generateJson(buildPrompt(profil, recents, articles)));
 
   if (DRY_RUN) {
     console.log(JSON.stringify(post, null, 2));

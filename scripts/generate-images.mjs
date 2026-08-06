@@ -20,6 +20,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
+import { chargerProfil } from "./lib/profil.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -80,7 +81,7 @@ function slug(link) {
 }
 
 // satori n'accepte pas de JSX ici : on décrit l'arbre à la main.
-function card(article, fmt) {
+function card(article, fmt, marque) {
   const { tagSize, brandSize } = fmt;
   const titleSize = fitTitleSize(article.title, fmt);
   return {
@@ -181,7 +182,7 @@ function card(article, fmt) {
                           fontWeight: 800,
                           letterSpacing: 3,
                         },
-                        children: "CEMATYS",
+                        children: marque.nom,
                       },
                     },
                     {
@@ -193,7 +194,7 @@ function card(article, fmt) {
                           fontSize: Math.round(brandSize * 0.75),
                           fontWeight: 500,
                         },
-                        children: "cematys.fr",
+                        children: marque.site,
                       },
                     },
                   ],
@@ -213,6 +214,12 @@ async function lireJson(fichier) {
 }
 
 async function main() {
+  const profil = await chargerProfil();
+  const marque = {
+    nom: profil.nom,
+    site: profil.site ? profil.site.replace(/^https?:\/\//, "") : "",
+  };
+
   // Deux sources de visuels : les articles du site, et les posts quotidiens
   // générés pour les réseaux. Les deux utilisent la même carte de marque.
   const articles = Object.values(await lireJson(SEEN_PATH)).map((a) => ({
@@ -250,7 +257,7 @@ async function main() {
         ignores++;
         continue;
       }
-      const svg = await satori(card(sujet, fmt), {
+      const svg = await satori(card(sujet, fmt, marque), {
         width: fmt.width,
         height: fmt.height,
         fonts,

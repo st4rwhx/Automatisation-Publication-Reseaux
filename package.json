@@ -6,15 +6,22 @@
     "node": ">=18"
   },
   "scripts": {
+    "onboarding": "node scripts/onboarding.mjs",
     "generate-rss": "node scripts/generate-rss.mjs",
     "daily-post": "node scripts/generate-daily-post.mjs",
     "generate-images": "node scripts/generate-images.mjs",
+    "video-script": "node scripts/generate-video-script.mjs",
+    "voiceover": "node scripts/generate-voiceover.mjs",
+    "broll": "node scripts/fetch-broll.mjs",
+    "assemble-video": "node scripts/assemble-video.mjs",
+    "video": "npm run video-script && npm run voiceover && npm run broll && npm run assemble-video",
     "publish": "node scripts/publish-to-postiz.mjs",
     "publish:dry": "node scripts/publish-to-postiz.mjs --dry-run",
-    "all": "npm run generate-rss && npm run daily-post && npm run generate-images && npm run publish"
+    "all": "npm run generate-rss && npm run daily-post && npm run generate-images && npm run video && npm run publish"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
+    "msedge-tts": "^2.0.7",
     "satori": "^0.29.0"
   }
 }

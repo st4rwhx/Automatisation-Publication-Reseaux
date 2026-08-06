@@ -18,6 +18,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { prochainCreneau } from "./lib/horaires.mjs";
+import { chargerProfil } from "./lib/profil.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -68,6 +69,10 @@ const IMAGE_FORMAT = {
   bluesky: "paysage",
 };
 const MEDIA_REQUIS = new Set(["instagram", "tiktok", "pinterest"]);
+
+// Réseaux où l'on préfère la vidéo (générée par le pipeline assemble-video.mjs)
+// à l'image statique, quand elle existe pour l'élément.
+const VIDEO_RESEAUX = new Set(["tiktok", "instagram", "facebook"]);
 
 const PLATFORM_SETTINGS = {
   // En post photo, TikTok lit le titre dans settings.title et le corps dans
@@ -152,8 +157,7 @@ async function lireJson(fichier, defaut) {
 }
 
 const cacheMedia = new Map();
-async function envoyerVisuel(element, format) {
-  const url = `${IMAGES_BASE_URL}/img/${element.imageBase}-${format}.png`;
+async function envoyerMedia(url, alt) {
   if (cacheMedia.has(url)) return cacheMedia.get(url);
 
   const media = await api("/upload-from-url", {
@@ -163,9 +167,17 @@ async function envoyerVisuel(element, format) {
   if (!media?.id || !media?.path) {
     throw new Error(`upload-from-url n'a rien renvoyé d'exploitable pour ${url}`);
   }
-  const dto = { id: media.id, path: media.path, alt: element.titre };
+  const dto = { id: media.id, path: media.path, alt };
   cacheMedia.set(url, dto);
   return dto;
+}
+
+function envoyerVisuel(element, format) {
+  return envoyerMedia(`${IMAGES_BASE_URL}/img/${element.imageBase}-${format}.png`, element.titre);
+}
+
+function envoyerVideo(element) {
+  return envoyerMedia(`${IMAGES_BASE_URL}/video/${element.videoBase}.mp4`, element.titre);
 }
 
 // Rassemble articles et posts quotidiens sous une forme commune.
@@ -182,17 +194,22 @@ async function collecterElements(siteUrl) {
     hashtags: [...(HASHTAGS_ARTICLE[a.tag] || [sansAccents(a.tag)]), ...HASHTAGS_COMMUNS],
   }));
 
-  const quotidiens = Object.entries(await lireJson(DAILY_PATH, {})).map(([jour, p]) => ({
-    cle: `quotidien:${jour}`,
-    type: "quotidien",
-    titre: p.hook,
-    corps: p.corps,
-    lien: siteUrl,
-    tag: p.theme,
-    imageBase: `quotidien-${jour}`,
-    date: p.genereLe,
-    hashtags: p.hashtags?.length ? p.hashtags : HASHTAGS_COMMUNS,
-  }));
+  const quotidiens = Object.entries(await lireJson(DAILY_PATH, {})).map(([jour, p]) => {
+    const videoBase = `quotidien-${jour}`;
+    const aUneVideo = existsSync(path.join(ROOT, "public", "video", `${videoBase}.mp4`));
+    return {
+      cle: `quotidien:${jour}`,
+      type: "quotidien",
+      titre: p.hook,
+      corps: p.corps,
+      lien: siteUrl,
+      tag: p.theme,
+      imageBase: videoBase,
+      videoBase: aUneVideo ? videoBase : null,
+      date: p.genereLe,
+      hashtags: p.hashtags?.length ? p.hashtags : HASHTAGS_COMMUNS,
+    };
+  });
 
   return [...articles, ...quotidiens];
 }
@@ -201,7 +218,8 @@ async function main() {
   if (!API_URL || !API_KEY) throw new Error("POSTIZ_API_URL et POSTIZ_API_KEY sont requis.");
 
   const horaires = await lireJson(HORAIRES_PATH, { reseaux: {} });
-  const elements = await collecterElements("https://cematys.fr/articles.html");
+  const profil = await chargerProfil();
+  const elements = await collecterElements(`${profil.site}/articles.html`);
   if (elements.length === 0) {
     console.log("Rien à publier — lancer generate-rss ou generate-daily-post.");
     return 0;
@@ -283,7 +301,9 @@ async function main() {
 
       try {
         let image = [];
-        if (format && IMAGES_BASE_URL) {
+        if (element.videoBase && VIDEO_RESEAUX.has(reseau) && IMAGES_BASE_URL) {
+          image = [await envoyerVideo(element)];
+        } else if (format && IMAGES_BASE_URL) {
           image = [await envoyerVisuel(element, format)];
         } else if (MEDIA_REQUIS.has(reseau)) {
           throw new Error(`${reseau} exige un visuel — définir IMAGES_BASE_URL.`);

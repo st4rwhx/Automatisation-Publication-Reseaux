@@ -1,5 +1,6 @@
 {
-  "entreprise": "CEMATYS",
+  "type": "entreprise",
+  "nom": "CEMATYS",
   "site": "https://cematys.fr",
   "activite": "Dépannage, infogérance et sécurité informatique pour les professionnels et associations",
   "zone": "Lyon et l'Est lyonnais (Villeurbanne, Décines, Meyzieu, Vaulx-en-Velin, Chassieu, Genas, Oullins, Bron)",
@@ -27,5 +28,9 @@
     "Citer un nom de client réel.",
     "Promettre un résultat garanti.",
     "Employer un ton anxiogène ou culpabilisant."
-  ]
+  ],
+  "video": {
+    "voix": "fr-FR-HenriNeural",
+    "styleBroll": "bureau, informatique, entreprise, technologie"
+  }
 }

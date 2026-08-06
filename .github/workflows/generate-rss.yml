@@ -23,6 +23,7 @@ jobs:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       KIMI_API_KEY: ${{ secrets.KIMI_API_KEY }}
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +33,11 @@ jobs:
           cache: npm
 
       - run: npm ci --no-audit --no-fund
+
+      # Nécessaire au montage vidéo (assemble-video.mjs). Présent par défaut sur
+      # ubuntu-latest, mais on le force pour ne pas dépendre de l'image du runner.
+      - name: Installer ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
 
       - name: Détecter les nouveaux articles et régénérer rss.xml
         run: node scripts/generate-rss.mjs
@@ -47,12 +53,22 @@ jobs:
       - name: Générer les visuels manquants
         run: node scripts/generate-images.mjs
 
-      - name: Committer le flux et les visuels
+      # Vidéo verticale du post du jour : script (LLM) → voix off (TTS gratuit) →
+      # b-roll (Pexels) → montage (ffmpeg). Ignoré si PEXELS_API_KEY absente —
+      # le système retombe sur le visuel statique pour ce jour-là.
+      - name: Générer la vidéo du jour
+        if: |
+          env.PEXELS_API_KEY != '' &&
+          (env.GEMINI_API_KEY != '' || env.GROQ_API_KEY != '' || env.DEEPSEEK_API_KEY != '' || env.KIMI_API_KEY != '')
+        run: npm run video
+        continue-on-error: true
+
+      - name: Committer le flux, les visuels et la vidéo
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/ public/
-          git diff --staged --quiet || git commit -m "chore: flux RSS et visuels des articles"
+          git diff --staged --quiet || git commit -m "chore: flux RSS, visuels et vidéo du jour"
           git push
 
       - uses: actions/upload-pages-artifact@v3

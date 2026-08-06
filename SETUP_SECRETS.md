@@ -38,6 +38,18 @@ URL de l'API Postiz auto-hébergée (ex: `http://192.168.x.x:3000`)
 ### POSTIZ_API_KEY
 Clé d'authentification de l'API Postiz
 
+## Secret optionnel (pour la vidéo)
+
+### PEXELS_API_KEY
+**Fournisseur:** Pexels (gratuit, illimité, sans carte bancaire)
+- Obtenir la clé: https://www.pexels.com/api/
+- Sert à télécharger des clips vidéo libres de droits pour le b-roll
+- Sans cette clé, le pipeline vidéo est simplement ignoré : le système continue
+  de publier avec le visuel statique (image), comme avant
+
+La voix off, elle, ne nécessite aucune clé : elle utilise l'API gratuite
+"Read Aloud" de Microsoft Edge via le paquet `msedge-tts`.
+
 ## Comment ajouter les secrets
 
 1. Allez sur le repository GitHub

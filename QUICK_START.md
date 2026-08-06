@@ -2,6 +2,10 @@
 
 **5 minutes pour mettre en place l'automatisation complète.**
 
+> Le profil (`config/profil.json`) est déjà configuré pour CEMATYS. Pour l'utiliser
+> pour une autre entreprise ou un particulier, lance `npm run onboarding` avant
+> les étapes ci-dessous — quelques questions suffisent.
+
 ## ✅ Étape 1 : Configurer les Secrets (2 min)
 
 ### Via GitHub Web (le plus simple)
@@ -17,6 +21,17 @@
 | `KIMI_API_KEY` | `sk-7nIIAzF0xjA0BEAOn8p8zzV7MDQC9mp3iyzy0xABre8ruHVf` |
 
 ✅ **Les secrets LLM sont maintenant configurés.**
+
+### Secret optionnel : la vidéo quotidienne
+
+Pour activer les vidéos courtes automatiques (TikTok/Reels), ajoute aussi :
+
+| Nom | Valeur |
+|-----|--------|
+| `PEXELS_API_KEY` | *Clé gratuite sur https://www.pexels.com/api/* |
+
+Sans cette clé, le système continue de fonctionner normalement avec des visuels
+statiques (image) au lieu de vidéos.
 
 ## ✅ Étape 2 : Activer GitHub Pages (1 min)
 

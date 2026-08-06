@@ -5,3 +5,9 @@ infra/.env
 *.log
 .DS_Store
 *.swp
+
+# Fichiers intermédiaires du pipeline vidéo (audio TTS, b-roll téléchargé) :
+# régénérés à chaque run, seule la vidéo finale (public/video/) est commitée.
+data/video/audio/
+data/video/broll/
+data/video/tmp/
