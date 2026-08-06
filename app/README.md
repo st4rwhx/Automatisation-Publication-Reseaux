@@ -82,25 +82,38 @@ npm run dev           # http://localhost:3000
 - Modèle de données multi-tenant (Prisma)
 - Stripe Checkout + webhook de synchronisation d'abonnement
 - Système de limites d'usage mensuelles par palier (`src/lib/usage.ts`)
+- **Génération de posts par utilisateur** (`src/lib/generatePost.ts`) : port de
+  `../scripts/generate-daily-post.mjs`, lit le `Profil` Postgres de l'utilisateur
+  et son historique de posts au lieu de fichiers JSON
+- **Génération de visuels par utilisateur** (`src/lib/generateImage.ts`) : port
+  de `../scripts/generate-images.mjs`, upload sur Vercel Blob au lieu de
+  `public/img/`
+- **Cron quotidien** (`src/app/api/cron/generate/route.ts` + `vercel.json`) :
+  parcourt tous les utilisateurs avec un profil, vérifie leur limite du mois
+  (`peutGenererPost`), génère post + visuels, incrémente la consommation.
+  Isole les échecs par utilisateur (un client en erreur ne bloque pas les
+  autres). Protégé par `CRON_SECRET` (Vercel l'injecte automatiquement dans
+  l'en-tête `Authorization` des appels cron si la variable porte ce nom exact).
 
 🚧 **Stubs à compléter avant un vrai lancement** :
 
-1. **Moteur de génération non branché en base de données** : les scripts
-   `../scripts/generate-daily-post.mjs`, `generate-video-script.mjs`, etc.
-   lisent et écrivent des fichiers JSON sur disque (un seul profil). Pour le
-   SaaS, il faut les adapter pour lire le `Profil` d'un utilisateur depuis
-   Postgres et écrire dans la table `Post`, plutôt que dans
-   `data/daily-posts.json`. La logique métier (prompts LLM, pipeline vidéo)
-   est réutilisable telle quelle, seule la couche de stockage change.
+1. **Pipeline vidéo non branché** : `../scripts/generate-video-script.mjs`,
+   `generate-voiceover.mjs`, `fetch-broll.mjs`, `assemble-video.mjs` ne sont
+   pas encore portés côté SaaS. Contrainte propre au serverless : ces scripts
+   utilisent `ffmpeg` installé sur la machine (présent sur les runners GitHub
+   Actions, absent par défaut sur les fonctions Vercel). Il faudra soit
+   embarquer `ffmpeg` via un package comme `ffmpeg-static`, soit déporter le
+   montage vidéo vers un worker à part (Vercel a une limite de durée
+   d'exécution même sur les plans payants) — à trancher avant de s'y attaquer.
 
-2. **Cron de génération quotidienne** : il faut un job qui tourne chaque jour
-   pour tous les utilisateurs actifs (Vercel Cron ou Supabase Edge Function),
-   qui vérifie `peutGenererPost()`/`peutGenererVideo()` avant de lancer la
-   génération, puis appelle `incrementerPost()`/`incrementerVideo()`.
-
-3. **Connexion des réseaux sociaux** (`/dashboard/reseaux`) : la page existe
+2. **Connexion des réseaux sociaux** (`/dashboard/reseaux`) : la page existe
    mais le bouton "Connecter" n'est pas encore relié au flux OAuth de Postiz.
    Chaque connexion réussie doit créer une ligne `CompteReseau`.
+
+3. **Publication effective** : le cron crée les posts en base (statut
+   `BROUILLON`) mais ne les envoie pas encore à Postiz. Il manque l'appel
+   équivalent à `../scripts/publish-to-postiz.mjs`, adapté pour utiliser les
+   `CompteReseau` de chaque utilisateur au lieu d'un compte Postiz unique.
 
 4. **Page Entreprise** : actuellement un simple lien `mailto:`, à remplacer
    par un vrai formulaire de contact si le volume le justifie.
