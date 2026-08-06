@@ -1,0 +1,74 @@
+/* Charte reprise de cematys.fr et de scripts/generate-images.mjs, pour que
+   l'app web et les visuels générés restent visuellement cohérents. */
+
+:root {
+  --ink: #1b2e44;
+  --ink2: #24405c;
+  --paper: #f6f7fa;
+  --teal: #3e6693;
+  --amber: #c03743;
+  --muted: #9aa7bc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Inter", "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+.conteneur {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.bouton {
+  display: inline-block;
+  background: var(--ink);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.bouton.amber {
+  background: var(--amber);
+}
+
+.bouton.contour {
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+}
+
+.carte {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(27, 46, 68, 0.1);
+}
+
+.etiquette {
+  display: inline-block;
+  background: var(--amber);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 6px;
+}

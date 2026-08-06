@@ -12,6 +12,11 @@ Trois flux de publication automatisés, sans intervention humaine quotidienne :
 3. **Vidéos quotidiennes** : le post du jour est aussi transformé en courte vidéo verticale
    (script → voix off → b-roll → montage), 100% gratuite, publiée sur TikTok/Instagram/Facebook.
 
+> **Prototype SaaS** : ce même moteur existe aussi en version produit multi-clients
+> dans [`app/`](app/README.md) — "CEMATYS Auto Post AI", avec inscription (Google ou
+> email), paliers d'abonnement (Free/Starter/Pro/Entreprise) et facturation Stripe.
+> Ce dossier `scripts/` reste l'automatisation interne dédiée à CEMATYS elle-même.
+
 Le système est **générique** : `config/profil.json` peut décrire une entreprise ou un
 particulier. Lance `npm run onboarding` pour le configurer sans toucher au code.
 

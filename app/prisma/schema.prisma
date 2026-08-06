@@ -1,0 +1,139 @@
+// Schéma multi-tenant : chaque utilisateur a son profil, ses posts, son
+// abonnement et sa consommation du mois. C'est ce qui permet à plusieurs
+// clients d'utiliser la même application sans jamais voir les données des
+// autres.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Palier {
+  FREE
+  STARTER
+  PRO
+  ENTREPRISE
+}
+
+enum TypeProfil {
+  ENTREPRISE
+  PARTICULIER
+}
+
+enum StatutPost {
+  BROUILLON
+  PLANIFIE
+  PUBLIE
+  ECHEC
+}
+
+// Un utilisateur = un compte (connecté via Clerk : Google ou email/mdp).
+model Utilisateur {
+  id          String   @id @default(cuid())
+  clerkId     String   @unique
+  email       String   @unique
+  creeLe      DateTime @default(now())
+
+  profil        Profil?
+  abonnement    Abonnement?
+  posts         Post[]
+  comptesReseaux CompteReseau[]
+  consommations Consommation[]
+}
+
+// Équivalent de config/profil.json, mais un par utilisateur au lieu d'un
+// fichier unique sur disque.
+model Profil {
+  id            String      @id @default(cuid())
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  utilisateurId String      @unique
+
+  type      TypeProfil @default(ENTREPRISE)
+  nom       String
+  site      String?
+  activite  String
+  zone      String
+  cible     String
+  depuis    Int?
+
+  ton        String[] // règles de ton
+  themes     String[] // thèmes de contenu récurrents
+  interdits  String[] // règles strictes
+
+  voixTts      String @default("fr-FR-HenriNeural")
+  styleBroll   String @default("bureau, technologie, entreprise")
+
+  majLe DateTime @updatedAt
+}
+
+// Abonnement Stripe de l'utilisateur, source de vérité pour le palier actif.
+model Abonnement {
+  id            String      @id @default(cuid())
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  utilisateurId String      @unique
+
+  palier              Palier   @default(FREE)
+  stripeCustomerId    String?  @unique
+  stripeSubscriptionId String? @unique
+  statutStripe        String? // active, past_due, canceled...
+  finPeriode          DateTime?
+
+  creeLe DateTime @default(now())
+  majLe  DateTime @updatedAt
+}
+
+// Consommation mensuelle, remise à zéro chaque mois. Sert à appliquer les
+// limites d'usage par palier façon Claude (pas un système de crédits).
+model Consommation {
+  id            String      @id @default(cuid())
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  utilisateurId String
+
+  mois         String // format "AAAA-MM"
+  postsUtilises  Int @default(0)
+  videosUtilisees Int @default(0)
+
+  @@unique([utilisateurId, mois])
+}
+
+// Compte social connecté par l'utilisateur (référence vers l'intégration
+// Postiz correspondante — Postiz gère les tokens OAuth de chaque réseau).
+model CompteReseau {
+  id            String      @id @default(cuid())
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  utilisateurId String
+
+  reseau         String // linkedin, instagram, tiktok, facebook
+  postizIntegrationId String
+  connecteLe     DateTime @default(now())
+
+  @@unique([utilisateurId, reseau])
+}
+
+// Historique des posts générés (quotidien ou article), miroir SaaS de
+// data/daily-posts.json et data/published.json dans la version script.
+model Post {
+  id            String      @id @default(cuid())
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  utilisateurId String
+
+  theme    String
+  sujet    String
+  hook     String
+  corps    String
+  hashtags String[]
+
+  aVideo   Boolean @default(false)
+  videoUrl String?
+  imageUrl String?
+
+  statut   StatutPost @default(BROUILLON)
+  planifieA DateTime?
+  publieA   DateTime?
+
+  creeLe DateTime @default(now())
+}
