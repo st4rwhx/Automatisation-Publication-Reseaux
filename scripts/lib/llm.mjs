@@ -16,25 +16,21 @@ const PROVIDERS = {
     available: () => Boolean(process.env.GEMINI_API_KEY),
     call: async (prompt) => {
       const key = process.env.GEMINI_API_KEY;
+      const modele = "gemini-3.7-flash";
       const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/interactions",
+        `https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`,
         {
           method: "POST",
           headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "gemini-3.5-flash-lite",
-            input: prompt,
+            contents: [{ parts: [{ text: prompt }] }],
           }),
         }
       );
       const body = await res.text();
-      if (!res.ok) throw new Error(`Gemini: HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`Gemini: HTTP ${res.status} — ${body.slice(0, 200)}`);
       const data = JSON.parse(body);
-      return (
-        data.output_text ??
-        data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ??
-        null
-      );
+      return data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ?? null;
     },
   },
 
@@ -49,13 +45,13 @@ const PROVIDERS = {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "mixtral-8x7b-32768",
+          model: "openai/gpt-oss-20b",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
         }),
       });
       const body = await res.text();
-      if (!res.ok) throw new Error(`Groq: HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`Groq: HTTP ${res.status} — ${body.slice(0, 200)}`);
       const data = JSON.parse(body);
       return data.choices?.[0]?.message?.content ?? null;
     },
@@ -78,7 +74,10 @@ const PROVIDERS = {
         }),
       });
       const body = await res.text();
-      if (!res.ok) throw new Error(`DeepSeek: HTTP ${res.status}`);
+      // HTTP 402 = compte sans crédit (l'API DeepSeek n'a pas de palier
+      // gratuit contrairement aux trois autres) : rien à corriger côté code,
+      // il faut approvisionner le compte sur platform.deepseek.com.
+      if (!res.ok) throw new Error(`DeepSeek: HTTP ${res.status} — ${body.slice(0, 200)}`);
       const data = JSON.parse(body);
       return data.choices?.[0]?.message?.content ?? null;
     },
@@ -88,7 +87,10 @@ const PROVIDERS = {
     available: () => Boolean(process.env.KIMI_API_KEY),
     call: async (prompt) => {
       const key = process.env.KIMI_API_KEY;
-      const res = await fetch("https://api.moonshot.cn/v1/chat/completions", {
+      // .ai = plateforme internationale, .cn = Chine continentale (compte et
+      // facturation séparés). Une clé prise sur platform.moonshot.ai ne
+      // fonctionne pas sur .cn, d'où les 401 avant ce correctif.
+      const res = await fetch("https://api.moonshot.ai/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${key}`,
@@ -101,7 +103,7 @@ const PROVIDERS = {
         }),
       });
       const body = await res.text();
-      if (!res.ok) throw new Error(`Kimi: HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`Kimi: HTTP ${res.status} — ${body.slice(0, 200)}`);
       const data = JSON.parse(body);
       return data.choices?.[0]?.message?.content ?? null;
     },
