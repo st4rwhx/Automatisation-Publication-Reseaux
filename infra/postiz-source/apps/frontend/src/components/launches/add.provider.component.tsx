@@ -18,6 +18,7 @@ import { web3List } from '@gitroom/frontend/components/launches/web3/web3.list';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import clsx from 'clsx';
 import copy from 'copy-to-clipboard';
+import { ApiSetupGuideButton } from '@gitroom/frontend/components/launches/api-setup-guide.component';
 import { capitalize } from 'lodash';
 const resolver = classValidatorResolver(ApiKeyDto);
 
@@ -717,6 +718,7 @@ export const AddProviderComponent: FC<{
                   'w-full text-[14px] rounded-[8px] bg-newTableHeader text-textColor relative items-center flex gap-[10px] cursor-pointer'
                 )}
               >
+                <ApiSetupGuideButton identifier={item.identifier} />
                 <div>
                   {item.identifier === 'youtube' ? (
                     <img src={`/icons/platforms/youtube.svg`} />

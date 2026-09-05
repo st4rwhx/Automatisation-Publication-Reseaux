@@ -11,6 +11,30 @@ publié par ses auteurs sous licence **GNU Affero General Public License v3.0
   de l'AGPL-3.0 de fournir le code source d'une version modifiée tournant
   comme service réseau accessible à des utilisateurs.
 
+## Fonctionnalité ajoutée : guide de configuration intégré
+
+Un bouton "?" apparaît sur chaque icône de réseau dans l'écran "Add Channel"
+(`apps/frontend/src/components/launches/add.provider.component.tsx`). Il
+ouvre un guide pas-à-pas (`api-setup-guide.component.tsx`) propre à chaque
+réseau : LinkedIn, YouTube, Facebook, Instagram, TikTok.
+
+Le guide affiche, pour chaque réseau :
+- Les étapes exactes pour créer l'app développeur (console, produits à
+  activer, permissions à demander)
+- L'URL de callback à renseigner, calculée dynamiquement
+  (`window.location.origin + /integrations/social/{identifier}`) — copiable
+  en un clic, toujours correcte quel que soit le domaine (Codespace ou OVH)
+- Les scopes/permissions réellement utilisés par ce projet, extraits
+  directement de `libraries/nestjs-libraries/src/integrations/social/*.provider.ts`
+  (pas une doc générique — les scopes exacts que le code demande)
+- Le délai de validation réaliste par plateforme (immédiat pour LinkedIn en
+  usage personnel, semaines pour YouTube/Meta en production, jours pour
+  TikTok)
+- Les noms de variables d'environnement à renseigner dans `infra/.env`
+
+Objectif : ne plus avoir à chercher dans une documentation externe pour
+savoir quoi faire quand on clique sur un réseau non configuré.
+
 ## Modifications apportées
 
 Remplacement de l'identité visuelle "Postiz" par "CEMATYS Auto Post AI" dans
