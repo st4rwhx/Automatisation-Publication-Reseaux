@@ -1,15 +1,24 @@
-# Stack Postiz auto-hébergé pour CEMATYS.
+# Stack Postiz auto-hébergé pour CEMATYS, rebrandée "CEMATYS Auto Post AI".
 # Adapté de https://github.com/gitroomhq/postiz-docker-compose
 # Les valeurs sensibles sont lues depuis infra/.env (voir .env.example).
 #
-#   cd infra && cp .env.example .env && $EDITOR .env && docker compose up -d
+# Le service "postiz" ne pointe plus vers l'image publique gitroomhq, mais
+# est reconstruit depuis infra/postiz-source/ (fork rebrandé, sans logo ni
+# nom "Postiz" visibles, sans lien d'affiliation ni faux témoignages).
+# Voir infra/postiz-source/CEMATYS_REBRAND.md pour le détail des modifications
+# et la justification de licence (AGPL-3.0 : code source modifié disponible ici).
+#
+#   cd infra && cp .env.example .env && $EDITOR .env && docker compose up -d --build
 #
 # Postiz écoute sur 4007. Mettre un reverse proxy HTTPS devant (Caddy/Nginx/Traefik) :
 # les APIs sociales (Meta, TikTok, LinkedIn) refusent les callbacks OAuth en HTTP.
 
 services:
   postiz:
-    image: ghcr.io/gitroomhq/postiz-app:latest
+    build:
+      context: ./postiz-source
+      dockerfile: Dockerfile.dev
+    image: cematys-auto-post-ai:latest
     container_name: postiz
     restart: always
     environment:
