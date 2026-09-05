@@ -1,15 +1,21 @@
-// Couche d'accès LLM avec fallback chain : Gemini → Groq → DeepSeek → Kimi.
+// Couche d'accès LLM avec fallback chain : Gemini → Groq → OpenRouter → Kimi.
 // Chaque provider a son propre format d'API ; on essaie chacun jusqu'au succès.
 //
 // Variables d'environnement :
-//   GEMINI_API_KEY     clé Google AI Studio (gratuite)
-//   GROQ_API_KEY       clé Groq (30 RPM gratuit)
-//   DEEPSEEK_API_KEY   clé DeepSeek
-//   KIMI_API_KEY       clé Moonshot Kimi
+//   GEMINI_API_KEY       clé Google AI Studio (gratuite)
+//   GROQ_API_KEY         clé Groq (30 RPM gratuit)
+//   OPENROUTER_API_KEY   clé OpenRouter (gratuite, sans carte bancaire — donne
+//                        accès à deepseek/deepseek-r1:free entre autres)
+//   KIMI_API_KEY         clé Moonshot Kimi
 //
 // Au moins une clé doit être définie. La chaîne essaie Gemini d'abord, puis
-// Groq, DeepSeek, Kimi en dernier recours. Si toutes échouent, l'erreur porte
-// sur le dernier provider.
+// Groq, OpenRouter, Kimi en dernier recours. Si toutes échouent, l'erreur
+// porte sur le dernier provider.
+//
+// Pourquoi OpenRouter plutôt que l'API DeepSeek directe : platform.deepseek.com
+// n'offre que 5M tokens gratuits à la création du compte, puis exige une carte
+// bancaire (HTTP 402 une fois épuisés). OpenRouter donne un accès gratuit
+// permanent à DeepSeek R1 (20 req/min, 50/jour), sans jamais rien payer.
 
 const PROVIDERS = {
   gemini: {
@@ -57,27 +63,28 @@ const PROVIDERS = {
     },
   },
 
-  deepseek: {
-    available: () => Boolean(process.env.DEEPSEEK_API_KEY),
+  openrouter: {
+    available: () => Boolean(process.env.OPENROUTER_API_KEY),
     call: async (prompt) => {
-      const key = process.env.DEEPSEEK_API_KEY;
-      const res = await fetch("https://api.deepseek.com/chat/completions", {
+      const key = process.env.OPENROUTER_API_KEY;
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${key}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "deepseek-chat",
+          // Variante ":free" : gratuite en permanence (20 req/min, 50/jour),
+          // sans carte bancaire. Peut disparaître si OpenRouter change son
+          // catalogue gratuit — dans ce cas, remplacer par un autre modèle
+          // listé sur openrouter.ai/models?max_price=0.
+          model: "deepseek/deepseek-r1:free",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
         }),
       });
       const body = await res.text();
-      // HTTP 402 = compte sans crédit (l'API DeepSeek n'a pas de palier
-      // gratuit contrairement aux trois autres) : rien à corriger côté code,
-      // il faut approvisionner le compte sur platform.deepseek.com.
-      if (!res.ok) throw new Error(`DeepSeek: HTTP ${res.status} — ${body.slice(0, 200)}`);
+      if (!res.ok) throw new Error(`OpenRouter: HTTP ${res.status} — ${body.slice(0, 200)}`);
       const data = JSON.parse(body);
       return data.choices?.[0]?.message?.content ?? null;
     },
@@ -115,7 +122,7 @@ export function llmConfigured() {
 }
 
 export async function generate(prompt) {
-  const order = ["gemini", "groq", "deepseek", "kimi"];
+  const order = ["gemini", "groq", "openrouter", "kimi"];
   let lastError = null;
 
   for (const name of order) {

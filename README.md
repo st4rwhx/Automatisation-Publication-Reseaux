@@ -78,7 +78,7 @@ npm run all               # enchaîne tout : RSS → daily-post → images → v
 ```
 
 **Variables d'environnement requises :**
-- Au moins un provider LLM : `GEMINI_API_KEY` ou `GROQ_API_KEY` ou `DEEPSEEK_API_KEY` ou `KIMI_API_KEY`
+- Au moins un provider LLM : `GEMINI_API_KEY` ou `GROQ_API_KEY` ou `OPENROUTER_API_KEY` ou `KIMI_API_KEY`
   → voir [`SETUP_SECRETS.md`](SETUP_SECRETS.md)
 - Pour la vidéo (optionnel) : `PEXELS_API_KEY` (gratuite) + `ffmpeg` installé sur la machine
 - Pour la publication : `POSTIZ_API_URL`, `POSTIZ_API_KEY`, `IMAGES_BASE_URL`
@@ -142,7 +142,7 @@ Exemple :
 | Génération des visuels de marque | ✅ Fait |
 | Posts quotidiens générés par IA | ✅ Fait |
 | Profil générique (entreprise/particulier) + onboarding | ✅ Fait |
-| Chaîne fallback LLM (Gemini → Groq → DeepSeek → Kimi) | ✅ Fait |
+| Chaîne fallback LLM (Gemini → Groq → OpenRouter → Kimi) | ✅ Fait |
 | Pipeline vidéo gratuit (script → voix → b-roll → montage) | ✅ Fait |
 | Scheduling optimisé par réseau | ✅ Fait |
 | Publication via API Postiz (image ou vidéo) | ✅ Fait |

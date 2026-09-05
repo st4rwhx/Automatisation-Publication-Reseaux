@@ -1,5 +1,5 @@
 // Port TypeScript de scripts/lib/llm.mjs — même chaîne fallback Gemini → Groq →
-// DeepSeek → Kimi, adaptée pour tourner dans une fonction serverless Next.js
+// OpenRouter → Kimi, adaptée pour tourner dans une fonction serverless Next.js
 // plutôt qu'un script CLI. La logique métier ne change pas.
 
 interface Provider {
@@ -39,18 +39,19 @@ const PROVIDERS: Record<string, Provider> = {
       return JSON.parse(body).choices?.[0]?.message?.content ?? null;
     },
   },
-  deepseek: {
-    disponible: () => Boolean(process.env.DEEPSEEK_API_KEY),
+  openrouter: {
+    disponible: () => Boolean(process.env.OPENROUTER_API_KEY),
     appeler: async (prompt) => {
-      const res = await fetch("https://api.deepseek.com/chat/completions", {
+      // Variante ":free" : gratuite en permanence (20 req/min, 50/jour), sans
+      // carte bancaire — contrairement à l'API DeepSeek directe qui n'offre
+      // que 5M tokens gratuits une fois puis exige un paiement (HTTP 402).
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
-        headers: { Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "deepseek-chat", messages: [{ role: "user", content: prompt }], temperature: 0.7 }),
+        headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "deepseek/deepseek-r1:free", messages: [{ role: "user", content: prompt }], temperature: 0.7 }),
       });
       const body = await res.text();
-      // HTTP 402 = compte sans crédit, pas de bug côté code : approvisionner
-      // le compte sur platform.deepseek.com (pas de palier gratuit ici).
-      if (!res.ok) throw new Error(`DeepSeek: HTTP ${res.status} — ${body.slice(0, 200)}`);
+      if (!res.ok) throw new Error(`OpenRouter: HTTP ${res.status} — ${body.slice(0, 200)}`);
       return JSON.parse(body).choices?.[0]?.message?.content ?? null;
     },
   },
@@ -72,7 +73,7 @@ const PROVIDERS: Record<string, Provider> = {
   },
 };
 
-const ORDRE = ["gemini", "groq", "deepseek", "kimi"] as const;
+const ORDRE = ["gemini", "groq", "openrouter", "kimi"] as const;
 
 export function llmConfigure(): boolean {
   return ORDRE.some((nom) => PROVIDERS[nom].disponible());

@@ -47,7 +47,13 @@ echo ""
 echo "Secrets LLM:"
 add_secret "GEMINI_API_KEY" "AQ.Ab8RN6KBjN6r5Ivnk_2lCHGbK4Jff5lqCTfWitziMKEzKdxjQg"
 add_secret "GROQ_API_KEY" "sk_live_6f5798f2a5501ea67300edd5570afae4"
-add_secret "DEEPSEEK_API_KEY" "sk-49c570d1ad9746fe968020009436d5be"
+if [ -n "$OPENROUTER_API_KEY" ]; then
+    add_secret "OPENROUTER_API_KEY" "$OPENROUTER_API_KEY"
+else
+    echo "⚠️  OPENROUTER_API_KEY non fournie — créer un compte gratuit sur"
+    echo "   openrouter.ai puis relancer avec :"
+    echo "   GITHUB_TOKEN=xxx OPENROUTER_API_KEY=sk-or-v1-... ./scripts/setup-secrets-api.sh"
+fi
 add_secret "KIMI_API_KEY" "sk-7nIIAzF0xjA0BEAOn8p8zzV7MDQC9mp3iyzy0xABre8ruHVf"
 
 echo ""

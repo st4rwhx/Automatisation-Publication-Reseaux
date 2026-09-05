@@ -9,12 +9,24 @@ const REPO = "Automatisation-Publication-Reseaux";
 const API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/actions/secrets`;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
+// OPENROUTER_API_KEY n'a pas de valeur par défaut : contrairement aux 3 autres,
+// cette clé n'a pas été fournie à l'avance. Créer un compte gratuit sur
+// openrouter.ai (aucune carte bancaire requise), puis exporter la variable
+// avant de lancer ce script : OPENROUTER_API_KEY=sk-or-v1-... node scripts/setup-secrets.mjs
 const SECRETS = {
   GEMINI_API_KEY: "AQ.Ab8RN6KBjN6r5Ivnk_2lCHGbK4Jff5lqCTfWitziMKEzKdxjQg",
   GROQ_API_KEY: "sk_live_6f5798f2a5501ea67300edd5570afae4",
-  DEEPSEEK_API_KEY: "sk-49c570d1ad9746fe968020009436d5be",
+  ...(process.env.OPENROUTER_API_KEY ? { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY } : {}),
   KIMI_API_KEY: "sk-7nIIAzF0xjA0BEAOn8p8zzV7MDQC9mp3iyzy0xABre8ruHVf",
 };
+
+if (!process.env.OPENROUTER_API_KEY) {
+  console.warn(
+    "⚠️  OPENROUTER_API_KEY non fournie — ce secret ne sera pas configuré.\n" +
+      "   Créer un compte gratuit sur openrouter.ai puis relancer avec :\n" +
+      "   OPENROUTER_API_KEY=sk-or-v1-... node scripts/setup-secrets.mjs\n"
+  );
+}
 
 if (!GITHUB_TOKEN) {
   console.error("❌ GITHUB_TOKEN manquant");

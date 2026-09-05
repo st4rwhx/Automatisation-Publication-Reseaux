@@ -37,10 +37,16 @@ gh secret set GROQ_API_KEY \
     --body "sk_live_6f5798f2a5501ea67300edd5570afae4"
 echo "✓ GROQ_API_KEY"
 
-gh secret set DEEPSEEK_API_KEY \
-    --repo "$REPO" \
-    --body "sk-49c570d1ad9746fe968020009436d5be"
-echo "✓ DEEPSEEK_API_KEY"
+if [ -n "$OPENROUTER_API_KEY" ]; then
+    gh secret set OPENROUTER_API_KEY \
+        --repo "$REPO" \
+        --body "$OPENROUTER_API_KEY"
+    echo "✓ OPENROUTER_API_KEY"
+else
+    echo "⚠️  OPENROUTER_API_KEY non fournie — créer un compte gratuit sur"
+    echo "   openrouter.ai puis relancer avec :"
+    echo "   OPENROUTER_API_KEY=sk-or-v1-... ./scripts/setup-secrets.sh"
+fi
 
 gh secret set KIMI_API_KEY \
     --repo "$REPO" \

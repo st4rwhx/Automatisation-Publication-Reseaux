@@ -18,11 +18,16 @@ Quatre secrets d'API doivent être ajoutés au repository GitHub. Accédez à **
 - Format: `sk_live_...`
 - Priorité: Fallback si Gemini épuisé
 
-### 3. DEEPSEEK_API_KEY
-**Fournisseur:** DeepSeek
-- Obtenir la clé: https://platform.deepseek.com
-- Format: `sk-...`
+### 3. OPENROUTER_API_KEY
+**Fournisseur:** OpenRouter (gratuit en permanence, sans carte bancaire)
+- Obtenir la clé: https://openrouter.ai (créer un compte, puis Keys → Create Key)
+- Format: `sk-or-v1-...`
 - Priorité: Troisième tentative
+- Donne accès au modèle gratuit `deepseek/deepseek-r1:free` (20 requêtes/min,
+  50/jour — largement suffisant pour un post par jour). **Ne pas confondre**
+  avec une clé de `platform.deepseek.com` : cette API-là n'offre que 5M tokens
+  gratuits à la création du compte puis exige un paiement (HTTP 402 une fois
+  épuisés) — c'est pour ça qu'on passe par OpenRouter plutôt que DeepSeek en direct.
 
 ### 4. KIMI_API_KEY
 **Fournisseur:** Moonshot (Kimi)
@@ -69,7 +74,7 @@ Le système essaie les providers dans cet ordre :
 
 1. **Gemini** — Premier choix (quota quotidien généreux)
 2. **Groq** — Si Gemini épuisé (gratuit mais limité à 30 RPM)
-3. **DeepSeek** — Alternative sans limite de RPM
+3. **OpenRouter** (DeepSeek R1 gratuit) — Troisième tentative
 4. **Kimi** — Dernier recours
 
 Si au moins une clé est configurée, le script `generate-daily-post.mjs` fonctionnera.

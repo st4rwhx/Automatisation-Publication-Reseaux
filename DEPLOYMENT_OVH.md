@@ -41,7 +41,7 @@ node scripts/setup-secrets.mjs
 2. Cliquez "New repository secret" pour chacun :
    - `GEMINI_API_KEY`: `AQ.Ab8RN6KBjN6r5Ivnk_2lCHGbK4Jff5lqCTfWitziMKEzKdxjQg`
    - `GROQ_API_KEY`: `sk_live_6f5798f2a5501ea67300edd5570afae4`
-   - `DEEPSEEK_API_KEY`: `sk-49c570d1ad9746fe968020009436d5be`
+   - `OPENROUTER_API_KEY`: à créer sur [openrouter.ai](https://openrouter.ai) (gratuit, sans carte bancaire)
    - `KIMI_API_KEY`: `sk-7nIIAzF0xjA0BEAOn8p8zzV7MDQC9mp3iyzy0xABre8ruHVf`
 
 ## 2. Configuration de Postiz sur OVH
