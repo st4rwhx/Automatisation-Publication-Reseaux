@@ -15,5 +15,21 @@
       "pmé"
     ],
     "genereLe": "2026-09-05T08:33:51.578Z"
+  },
+  "2026-09-06": {
+    "theme": "Sécurité",
+    "sujet": "Gestion des accès lors d'un départ salarié",
+    "visuel": "Départ d'un salarié : pensez à fermer les accès",
+    "hook": "Un collaborateur s'en va : ses accès informatiques sont-ils vraiment tous fermés ?",
+    "corps": "Messagerie, dossiers partagés, logiciels métiers : la liste des outils accessibles est souvent plus longue qu'on ne l'imagine.\nSans procédure formalisée, des comptes restent actifs plusieurs mois après un départ, créant une porte d'entrée inutile sur vos données.\nCes comptes oubliés continuent également d'être facturés chaque mois dans vos abonnements logiciels.\nLa bonne pratique consiste à lister les accès attribués à chaque poste pour pouvoir les révoquer dès le dernier jour ouvré.\nPour les TPE et PME de l'Est lyonnais, ce réflexe simple permet de sécuriser l'entreprise sans alourdir l'organisation.",
+    "hashtags": [
+      "tpe",
+      "pme",
+      "cybersecurite",
+      "infogerance",
+      "lyon",
+      "estlyonnais"
+    ],
+    "genereLe": "2026-09-06T01:49:06.069Z"
   }
 }
