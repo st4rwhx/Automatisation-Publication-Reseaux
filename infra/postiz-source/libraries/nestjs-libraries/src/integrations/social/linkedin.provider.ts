@@ -61,15 +61,16 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
   oneTimeToken = true;
 
   isBetweenSteps = false;
-  scopes = [
-    'openid',
-    'profile',
-    'w_member_social',
-    'r_basicprofile',
-    'rw_organization_admin',
-    'w_organization_social',
-    'r_organization_social',
-  ];
+  // CEMATYS fix : les scopes d'organisation (rw_organization_admin,
+  // w_organization_social, r_organization_social) exigent une validation
+  // LinkedIn Marketing Developer Platform (plusieurs semaines, non self-serve).
+  // Ce provider sert au profil PERSONNEL — checkScopes() exige que 100% des
+  // scopes demandés soient accordés, donc les laisser ici fait échouer toute
+  // connexion personnelle avec NotEnoughScopes, même app développeur correcte.
+  // Bug upstream toujours ouvert (PR gitroomhq/postiz-app#1134 fermée sans
+  // merge) : issues #1197, #1243, #1580, #1582. linkedin.page.provider.ts
+  // (LinkedIn Page) garde ces scopes, légitimement nécessaires pour ce cas-là.
+  scopes = ['openid', 'profile', 'w_member_social', 'r_basicprofile'];
   override maxConcurrentJob = 2;
   refreshWait = true;
   editor = 'normal' as const;
@@ -180,9 +181,15 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
   async generateAuthUrl() {
     const state = makeId(6);
     const codeVerifier = makeId(30);
+    // CEMATYS fix : prompt=none demande à LinkedIn de ne jamais afficher
+    // l'écran de consentement — sur une première connexion (ou après ajout
+    // de nouveaux scopes), LinkedIn n'a rien à quoi consentir et renvoie un
+    // jeton sans les scopes demandés, ce qui déclenche NotEnoughScopes juste
+    // après. Retiré pour que l'écran de consentement s'affiche normalement
+    // (issues gitroomhq/postiz-app #1580, #1582).
     const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${
       process.env.LINKEDIN_CLIENT_ID
-    }&prompt=none&redirect_uri=${encodeURIComponent(
+    }&redirect_uri=${encodeURIComponent(
       `${process.env.FRONTEND_URL}/integrations/social/linkedin`
     )}&state=${state}&scope=${encodeURIComponent(this.scopes.join(' '))}`;
     return {

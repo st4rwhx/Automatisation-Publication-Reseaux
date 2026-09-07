@@ -11,6 +11,34 @@ publié par ses auteurs sous licence **GNU Affero General Public License v3.0
   de l'AGPL-3.0 de fournir le code source d'une version modifiée tournant
   comme service réseau accessible à des utilisateurs.
 
+## Correctif : connexion LinkedIn personnelle impossible (bug upstream)
+
+`libraries/nestjs-libraries/src/integrations/social/linkedin.provider.ts` —
+le provider LinkedIn personnel ('linkedin', distinct de 'linkedin-page')
+demandait aussi les scopes d'organisation (`rw_organization_admin`,
+`w_organization_social`, `r_organization_social`), qui exigent une
+validation LinkedIn Marketing Developer Platform (2 à 8 semaines,
+non self-serve). `checkScopes()` exige 100% des scopes demandés → toute
+connexion d'un profil personnel échouait avec `NotEnoughScopes`, même avec
+une app développeur correctement configurée.
+
+Bug confirmé toujours présent sur `main` de gitroomhq/postiz-app au
+2026-09-05 : une pull request de correction (#1134) a été fermée sans être
+fusionnée. Issues associées : #1197, #1243, #1580, #1582.
+
+Corrigé ici :
+- Scopes réduits à `openid`, `profile`, `w_member_social`, `r_basicprofile`
+  pour le provider personnel (`linkedin-page` garde les scopes d'organisation,
+  légitimement nécessaires pour publier sur une page d'entreprise)
+- Retrait de `prompt=none` dans `generateAuthUrl()` : ce paramètre empêchait
+  l'écran de consentement LinkedIn de s'afficher lors d'une première
+  connexion, donc aucun scope n'était jamais accordé
+
+Effet de bord accepté : la fonctionnalité de mention d'entreprise dans un
+post (`@nomEntreprise` → lien vers sa page LinkedIn) peut ne plus fonctionner
+sans le scope `r_organization_social`. La publication de posts personnels,
+elle, fonctionne.
+
 ## Fonctionnalité ajoutée : guide de configuration intégré
 
 Un bouton "?" apparaît sur chaque icône de réseau dans l'écran "Add Channel"
