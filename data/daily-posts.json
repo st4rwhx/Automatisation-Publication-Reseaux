@@ -31,5 +31,21 @@
       "estlyonnais"
     ],
     "genereLe": "2026-09-06T01:49:06.069Z"
+  },
+  "2026-09-07": {
+    "theme": "Sécurité",
+    "sujet": "Double authentification sur messagerie contre faux RIB",
+    "visuel": "Messagerie pro : 1 réflexe pour bloquer la fraude au RIB",
+    "hook": "Votre boîte mail d'entreprise contient bien plus que de simples messages.",
+    "corps": "Lorsqu'un accès mail est piraté, l'attaquant ne cherche plus à tout bloquer : il surveille discrètement les échanges de facturation.\nIl lui suffit ensuite de remplacer votre RIB sur un devis en cours pour détourner un paiement client vers son propre compte.\nActiver la double validation (code sur smartphone à la connexion) neutralise ce risque dans l'immense majorité des cas.\nÀ Lyon et dans l'Est lyonnais, nous aidons les dirigeants à verrouiller ces accès essentiels sans ralentir le travail des équipes.",
+    "hashtags": [
+      "cybersecurite",
+      "pme",
+      "lyon",
+      "tpe",
+      "entrepriseslyonnaises",
+      "infogerance"
+    ],
+    "genereLe": "2026-09-07T01:46:06.776Z"
   }
 }
