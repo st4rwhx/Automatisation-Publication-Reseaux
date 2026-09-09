@@ -64,5 +64,21 @@
       "commerces"
     ],
     "genereLe": "2026-09-08T01:57:23.635Z"
+  },
+  "2026-09-09": {
+    "theme": "Sécurité",
+    "sujet": "Séparer le Wi-Fi invité du réseau interne",
+    "visuel": "Donnez-vous le bon code Wi-Fi à vos visiteurs ?",
+    "hook": "Quand un visiteur vous demande le Wi-Fi, quel mot de passe lui donnez-vous ?",
+    "corps": "Partager le réseau principal de votre entreprise permet à un appareil extérieur de voir vos postes et vos dossiers partagés.\nSi l'ordinateur portable d'un client ou d'un prestataire est mal protégé, votre structure s'expose à un risque direct de blocage.\nLa solution consiste à déployer un réseau Wi-Fi « Invité » totalement isolé de vos outils de travail et de vos données sensibles.\nÀ Lyon et dans l'Est lyonnais, nous accompagnons les TPE et cabinets pour mettre en place ce cloisonnement en toute simplicité.",
+    "hashtags": [
+      "informatiquelyon",
+      "estlyonnais",
+      "securiteinformatique",
+      "tpepme",
+      "entrepriseslyon",
+      "infogerance"
+    ],
+    "genereLe": "2026-09-09T02:02:43.383Z"
   }
 }
