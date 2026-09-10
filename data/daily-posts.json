@@ -80,5 +80,21 @@
       "infogerance"
     ],
     "genereLe": "2026-09-09T02:02:43.383Z"
+  },
+  "2026-09-10": {
+    "theme": "Prévention",
+    "sujet": "Protéger son matériel contre les micro-coupures électriques",
+    "visuel": "Micro-coupure : votre matériel est-il protégé ?",
+    "hook": "Une coupure de 2 secondes peut paralyser vos équipes tout l'après-midi.",
+    "corps": "Dans les zones d'activités de Lyon et de l'Est lyonnais, les micro-coupures et variations de tension sont courantes lors des intempéries.\nSans onduleur en bon état, un arrêt brutal peut endommager un composant ou corrompre les fichiers en cours d'enregistrement.\nPrenez cinq minutes cette semaine pour vérifier vos équipements : la batterie d'un onduleur se remplace en moyenne tous les 3 ans.\nC'est un geste simple qui évite des pannes matérielles imprévues et de longues heures d'interruption d'activité.\nDepuis 2010, CEMATYS veille à la continuité de service des entreprises et structures locales.",
+    "hashtags": [
+      "informatique",
+      "lyon",
+      "pme",
+      "estlyonnais",
+      "continuitedactivite",
+      "maintenanceinformatique"
+    ],
+    "genereLe": "2026-09-10T01:59:28.691Z"
   }
 }
