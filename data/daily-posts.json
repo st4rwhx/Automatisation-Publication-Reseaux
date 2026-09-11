@@ -96,5 +96,21 @@
       "maintenanceinformatique"
     ],
     "genereLe": "2026-09-10T01:59:28.691Z"
+  },
+  "2026-09-11": {
+    "theme": "Prévention",
+    "sujet": "Planifier maintenances hors heures creuses pour éviter arrêts",
+    "visuel": "Maintenance hors heures creuses = moins de pertes",
+    "hook": "Une petite pause nocturne peut éviter de gros arrêts",
+    "corps": "Planifiez les mises à jour et les contrôles de sécurité en dehors des heures de travail.\nAinsi, vos équipes restent productives sans interruption.\nAssurez-vous que le planning est partagé avec tous les responsables.\nUne maintenance bien planifiée réduit les coûts et les risques d'arrêt.",
+    "hashtags": [
+      "lyon",
+      "infogérance",
+      "maintenance",
+      "prévention",
+      "tpe",
+      "pme"
+    ],
+    "genereLe": "2026-09-11T01:58:48.265Z"
   }
 }
