@@ -112,5 +112,22 @@
       "pme"
     ],
     "genereLe": "2026-09-11T01:58:48.265Z"
+  },
+  "2026-09-12": {
+    "theme": "Infogérance",
+    "sujet": "Inventaire des équipements pour maîtriser les coûts",
+    "visuel": "Inventaire 101 : votre matériel, votre controle",
+    "hook": "Vous avez perdu un poste sans le savoir? Un inventaire simple evite les surprises.",
+    "corps": "Un inventaire precis vous permet de savoir exactement ce que possede votre entreprise.\nEn identifiant les equipements inutilises ou obsoletes, vous reduisez vos depenses d'achat.\nIl facilite la planification des remplacements et evite les arrets imprévus.\nCommencez dès aujourd'hui : listez chaque poste, son numero de serie et son responsable.",
+    "hashtags": [
+      "lyon",
+      "tpe",
+      "pme",
+      "informatique",
+      "gestion",
+      "securite",
+      "inventaire"
+    ],
+    "genereLe": "2026-09-12T02:02:58.979Z"
   }
 }
