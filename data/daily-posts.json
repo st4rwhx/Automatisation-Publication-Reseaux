@@ -129,5 +129,21 @@
       "inventaire"
     ],
     "genereLe": "2026-09-12T02:02:58.979Z"
+  },
+  "2026-09-13": {
+    "theme": "Prévention",
+    "sujet": "Routeur de secours pour coupure fibre",
+    "visuel": "Coupure fibre : votre activité peut-elle continuer ?",
+    "hook": "Une coupure de fibre peut paralyser votre entreprise pendant plusieurs jours.",
+    "corps": "Sans connexion internet, la plupart des PME ne peuvent plus facturer, accéder à leurs outils métiers ni répondre aux clients.\nDans les zones d'activités de l'Est lyonnais, les incidents de voirie ou les pannes d'opérateur restent fréquents et imprévisibles.\nLa mise en place d'un boîtier avec bascule automatique sur un réseau mobile de secours assure la continuité du travail sans intervention manuelle.\nC'est un dispositif simple qui évite de perdre une journée de travail pour un câble sectionné.",
+    "hashtags": [
+      "lyon",
+      "estlyonnais",
+      "tpe",
+      "pme",
+      "infogerance",
+      "continuiteactivite"
+    ],
+    "genereLe": "2026-09-13T01:57:04.364Z"
   }
 }
