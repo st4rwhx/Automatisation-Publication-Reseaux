@@ -145,5 +145,22 @@
       "continuiteactivite"
     ],
     "genereLe": "2026-09-13T01:57:04.364Z"
+  },
+  "2026-09-14": {
+    "theme": "Sécurité",
+    "sujet": "Sécuriser accès mobiles VPN et MFA",
+    "visuel": "Accès mobile sécurisé : VPN + MFA",
+    "hook": "Vous avez des salariés qui travaillent en mobilité?",
+    "corps": "Un accès mobile non sécurisé expose votre entreprise à des intrusions.\nMettre en place un VPN garantit que les données restent chiffrées sur le réseau.\nAjouter une authentification à deux facteurs (MFA) réduit considérablement le risque d'accès non autorisé.\nEn combinant VPN et MFA, vous protégez votre réseau sans alourdir le processus d'accès.",
+    "hashtags": [
+      "cybersecurité",
+      "vpn",
+      "mfa",
+      "mobilité",
+      "entreprise",
+      "lyon",
+      "infogérance"
+    ],
+    "genereLe": "2026-09-14T02:14:59.907Z"
   }
 }
