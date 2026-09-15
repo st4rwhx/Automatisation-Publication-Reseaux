@@ -162,5 +162,22 @@
       "infogérance"
     ],
     "genereLe": "2026-09-14T02:14:59.907Z"
+  },
+  "2026-09-15": {
+    "theme": "Coûts",
+    "sujet": "Consolider licences pour maîtriser dépenses informatiques",
+    "visuel": "Réduisez vos dépenses IT en gérant vos licences",
+    "hook": "Chaque licence non utilisée est un coût caché dans votre budget.",
+    "corps": "1. Inventaire mensuel: notez chaque licence et son usage.\n2. Supprimez celles qui ne sont plus utilisées.\n3. Regroupez les licences similaires pour obtenir des remises.\n4. Mettez en place un tableau de suivi pour éviter les renouvellements inutiles.\n5. Vérifiez chaque année votre contrat pour rester aligné avec votre activité.",
+    "hashtags": [
+      "lyon",
+      "it",
+      "tpe",
+      "pme",
+      "coûts",
+      "licences",
+      "infogérance"
+    ],
+    "genereLe": "2026-09-15T00:04:27.083Z"
   }
 }
