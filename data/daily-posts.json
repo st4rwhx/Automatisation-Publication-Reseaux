@@ -179,5 +179,21 @@
       "infogérance"
     ],
     "genereLe": "2026-09-15T00:04:27.083Z"
+  },
+  "2026-09-16": {
+    "theme": "Maintenance",
+    "sujet": "Automatiser redémarrages serveurs",
+    "visuel": "Redémarrages automatiques, gagnez du temps",
+    "hook": "Vous perdez du temps à redémarrer vos serveurs à chaque panne ? Automatisez !",
+    "corps": "Un script simple peut redémarrer automatiquement un serveur après une panne.\nVous évitez ainsi les interruptions manuelles et gagnez du temps.\nEn programmant ces scripts, vous réduisez également le nombre de tickets de support.\nCEMATYS peut vous aider à mettre en place ces automatisations sur mesure.",
+    "hashtags": [
+      "lyon",
+      "informatique",
+      "petitesentreprises",
+      "maintenance",
+      "automation",
+      "cematys"
+    ],
+    "genereLe": "2026-09-16T02:14:38.467Z"
   }
 }
