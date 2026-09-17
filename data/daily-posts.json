@@ -195,5 +195,21 @@
       "cematys"
     ],
     "genereLe": "2026-09-16T02:14:38.467Z"
+  },
+  "2026-09-17": {
+    "theme": "Prévention",
+    "sujet": "Planifier le renouvellement du parc informatique vieillissant",
+    "visuel": "PC d'entreprise : quand faut-il renouveler le matériel ?",
+    "hook": "Garder un PC jusqu'à la panne coûte souvent plus cher que de le remplacer.",
+    "corps": "Au-delà de quatre ou cinq ans, un poste accumule les lenteurs quotidiennes et les risques d'arrêt brutal en pleine journée.\nAttendre la panne totale oblige à racheter un équipement dans l'urgence, sans temps pour préparer sereinement la transition des logiciels et des données.\nÉtaler le renouvellement d'une fraction de votre parc chaque année permet de lisser votre budget et de préserver le confort de vos équipes.\nÀ Lyon et dans l'Est lyonnais, nous accompagnons les TPE et PME pour anticiper ces cycles sans perturber leur activité.",
+    "hashtags": [
+      "informatique",
+      "lyon",
+      "tpe",
+      "pme",
+      "productivite",
+      "gestion"
+    ],
+    "genereLe": "2026-09-17T02:19:12.251Z"
   }
 }
