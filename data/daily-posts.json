@@ -228,5 +228,20 @@
       "sécurité"
     ],
     "genereLe": "2026-09-18T02:04:42.684Z"
+  },
+  "2026-09-19": {
+    "theme": "Prévention",
+    "sujet": "Migrer vers le cloud pour réduire coûts",
+    "visuel": "Cloud: moins de coûts, plus de flexibilité",
+    "hook": "Vous pensez que le cloud est trop cher? Détrompez‑vous.",
+    "corps": "Le passage au cloud permet de réduire les dépenses d'achat et d'entretien de matériel.\nIl offre une facturation à l’usage, ce qui évite les surcoûts liés aux pics d’activité.\nLa gestion est centralisée, ce qui diminue les temps d’arrêt et les coûts de main‑d’œuvre.\nPlanifiez un audit de vos besoins actuels et choisissez un modèle hybride adapté à votre structure.",
+    "hashtags": [
+      "cloud",
+      "tpe",
+      "pmr",
+      "infogérance",
+      "coûts"
+    ],
+    "genereLe": "2026-09-19T02:08:40.444Z"
   }
 }
