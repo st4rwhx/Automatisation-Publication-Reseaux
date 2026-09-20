@@ -243,5 +243,22 @@
       "coûts"
     ],
     "genereLe": "2026-09-19T02:08:40.444Z"
+  },
+  "2026-09-20": {
+    "theme": "coûts",
+    "sujet": "Réduire consommation serveurs, économies immédiates",
+    "visuel": "Serveurs + Énergie = Économies",
+    "hook": "Chaque kilowatt compte pour votre trésorerie",
+    "corps": "En surveillant la température de vos racks, vous limitez la surchauffe et la consommation.\nUtilisez les modes veille des serveurs lorsqu'ils ne sont pas sollicités, surtout la nuit.\nPlanifiez les mises à jour pendant les périodes de faible charge pour éviter les pics énergétiques.\nUn simple audit énergétique révèle souvent des économies de 10 à 20 %.",
+    "hashtags": [
+      "lyon",
+      "coûts",
+      "serveurs",
+      "énergie",
+      "infogérance",
+      "pmé",
+      "sustainability"
+    ],
+    "genereLe": "2026-09-20T02:15:00.157Z"
   }
 }
