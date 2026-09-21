@@ -260,5 +260,22 @@
       "sustainability"
     ],
     "genereLe": "2026-09-20T02:15:00.157Z"
+  },
+  "2026-09-21": {
+    "theme": "prévention",
+    "sujet": "Mises à jour logicielles sans interruption",
+    "visuel": "Mises à jour planifiées, pas de surprises",
+    "hook": "Les mises à jour non planifiées coûtent souvent plus que le temps de pause.",
+    "corps": "Planifiez les mises à jour en dehors des heures de pointe pour limiter les interruptions.\nTestez chaque mise à jour sur un poste pilote avant de l’étendre.\nAssurez un backup complet juste avant l’installation.\nInformez votre équipe de la date et du temps d’arrêt prévu.",
+    "hashtags": [
+      "lyon",
+      "infogérance",
+      "sécurité",
+      "tpe",
+      "pmé",
+      "gestioninformatique",
+      "cematys"
+    ],
+    "genereLe": "2026-09-21T02:14:39.864Z"
   }
 }
