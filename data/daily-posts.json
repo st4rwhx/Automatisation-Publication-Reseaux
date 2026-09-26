@@ -344,5 +344,22 @@
       "informatique"
     ],
     "genereLe": "2026-09-25T02:23:48.434Z"
+  },
+  "2026-09-26": {
+    "theme": "Sécurité",
+    "sujet": "Chiffrement des disques sur ordinateurs portables nomades",
+    "visuel": "PC portable perdu : vos données sont-elles lisibles ?",
+    "hook": "Un ordinateur portable oublié dans un train ou un coffre, cela arrive vite.",
+    "corps": "Sans chiffrement du disque dur, n'importe qui peut lire vos devis, contrats ou fichiers clients en branchant la mémoire sur un autre poste.\nActiver la protection de vos disques verrouille l'accès aux données en cas de perte physique du matériel.\nC'est un réglage rapide qui évite qu'un simple oubli ne devienne une fuite de données confidentielles pour votre entreprise.\nÀ Lyon et dans l'Est lyonnais, nous vous aidons à sécuriser simplement votre flotte mobile.",
+    "hashtags": [
+      "lyon",
+      "estlyonnais",
+      "tpe",
+      "pme",
+      "securiteinformatique",
+      "teletravail",
+      "infogerance"
+    ],
+    "genereLe": "2026-09-26T02:28:07.688Z"
   }
 }
