@@ -361,5 +361,22 @@
       "infogerance"
     ],
     "genereLe": "2026-09-26T02:28:07.688Z"
+  },
+  "2026-09-27": {
+    "theme": "Prévention",
+    "sujet": "Test mensuel de récupération après sinistre",
+    "visuel": "Testez votre plan de reprise, pas votre ordinateur",
+    "hook": "Un test mensuel de récupération peut sauver votre entreprise",
+    "corps": "Planifiez un test de restauration de données chaque mois, même si vous avez une sauvegarde.\nChoisissez un poste critique, restaurez les fichiers et vérifiez l’intégrité.\nNotez les écarts, corrigez les problèmes et répétez.\nUn test régulier vous évite un arrêt prolongé en cas d’incident réel.\nC’est un investissement de quelques heures, mais il protège votre activité.",
+    "hashtags": [
+      "lyon",
+      "infogérance",
+      "prévention",
+      "reprise",
+      "sauvegarde",
+      "businesscontinuity",
+      "tpe"
+    ],
+    "genereLe": "2026-09-27T00:01:47.016Z"
   }
 }
