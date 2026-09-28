@@ -378,5 +378,21 @@
       "tpe"
     ],
     "genereLe": "2026-09-27T00:01:47.016Z"
+  },
+  "2026-09-28": {
+    "theme": "Prévention",
+    "sujet": "Désactiver les accès des anciens collaborateurs",
+    "visuel": "Départ d'un salarié : pensez aux accès informatiques",
+    "hook": "Un collaborateur quitte l'entreprise : ses accès restent-ils ouverts ?",
+    "corps": "Lorsqu'un salarié s'en va, la clôture des accès informatiques est souvent reléguée au second plan derrière les démarches administratives.\nMessagerie, logiciels métiers, dossiers partagés ou accès à distance continuent parfois de fonctionner des mois après son départ.\nCes comptes fantômes augmentent inutilement le risque d'erreur, de fuite de données ou de facturation de licences superflues.\nÉtablir une procédure simple pour révoquer ou transférer les accès dès le dernier jour de contrat protège vos informations professionnelles.\nÀ Lyon et dans l'Est lyonnais, nous accompagnons les dirigeants dans la gestion sereine de ces transitions d'équipe.",
+    "hashtags": [
+      "tpe",
+      "pme",
+      "lyon",
+      "entreprises",
+      "securiteinformatique",
+      "infogerance"
+    ],
+    "genereLe": "2026-09-28T00:07:37.592Z"
   }
 }
