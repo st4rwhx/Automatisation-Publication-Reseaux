@@ -394,5 +394,21 @@
       "infogerance"
     ],
     "genereLe": "2026-09-28T00:07:37.592Z"
+  },
+  "2026-09-29": {
+    "theme": "Prévention",
+    "sujet": "Contrôler l’usage des clés USB",
+    "visuel": "USB : un risque sous-estimé",
+    "hook": "Les clés USB sont un vecteur de perte de données, voici comment les maîtriser.",
+    "corps": "Les clés USB sont un vecteur de perte de données.\nElles peuvent introduire des virus ou faire disparaître des fichiers critiques.\nMettez en place une politique d’utilisation stricte.\nAutorisez uniquement les dispositifs approuvés et tracez leur usage.\nFormez votre équipe sur les risques liés aux périphériques amovibles.",
+    "hashtags": [
+      "usb",
+      "sécurité",
+      "infogérance",
+      "lyon",
+      "tpe",
+      "pmé"
+    ],
+    "genereLe": "2026-09-29T03:11:54.481Z"
   }
 }
