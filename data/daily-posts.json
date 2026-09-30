@@ -410,5 +410,22 @@
       "pmé"
     ],
     "genereLe": "2026-09-29T03:11:54.481Z"
+  },
+  "2026-09-30": {
+    "theme": "Prévention",
+    "sujet": "Conformité RGPD : vérifications rapides pour PME",
+    "visuel": "RGPD : 3 vérifs rapides",
+    "hook": "Vous avez moins de 50 salariés, êtes-vous conforme RGPD?",
+    "corps": "1. Assurez une sauvegarde régulière des données personnelles.\n2. Limitez l'accès aux dossiers sensibles.\n3. Mettez en place un protocole d'alerte en cas de fuite.",
+    "hashtags": [
+      "rgpd",
+      "conformité",
+      "sécurité",
+      "lyon",
+      "infogérance",
+      "tpe",
+      "pm"
+    ],
+    "genereLe": "2026-09-30T00:52:12.231Z"
   }
 }
