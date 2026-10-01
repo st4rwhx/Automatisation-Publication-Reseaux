@@ -427,5 +427,21 @@
       "pm"
     ],
     "genereLe": "2026-09-30T00:52:12.231Z"
+  },
+  "2026-10-01": {
+    "theme": "Sécurité",
+    "sujet": "Filtrer le contenu réseau pour bloquer sites malveillants",
+    "visuel": "Bloquez les menaces avant qu'elles n'atteignent votre réseau",
+    "hook": "Vous pensez que votre pare‑feu suffit? Pensez à filtrer le contenu.",
+    "corps": "Un filtre de contenu sur votre routeur bloque les sites malveillants avant qu'ils n'atteignent les postes.\nIl suffit d'activer la fonction de filtrage web dans la configuration de votre équipement réseau.\nVous ne payez pas de frais supplémentaires et vous réduisez les risques d'infection.\nCEMATYS peut vous aider à paramétrer cette solution rapidement et sans interruption.",
+    "hashtags": [
+      "lyon",
+      "sécuritéinformatique",
+      "entreprises",
+      "infogérance",
+      "protection",
+      "réseau"
+    ],
+    "genereLe": "2026-10-01T00:54:43.557Z"
   }
 }
